@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>SALG__Application_</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>DoS.ico</ApplicationIcon>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="DoS.ico" />
+		<None Remove="DoS_dark.png" />
+		<None Remove="DoS.png" />
+		<None Remove="TRT.png" />
+		<None Remove="TRT_dark.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Resource Include="DoS.ico" />
+		<Resource Include="DoS_dark.png" />
+		<Resource Include="DoS.png" />
+		<Resource Include="TRT.png" />
+		<Resource Include="TRT_dark.png" />
+	</ItemGroup>
+
+</Project>
