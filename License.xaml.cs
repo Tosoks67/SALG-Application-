@@ -26,8 +26,11 @@ namespace SALG__Application_
             InitializeComponent();
             var assembly = Assembly.GetExecutingAssembly();
             using Stream stream = assembly.GetManifestResourceStream("SALG__Application_.LICENSE.txt");
-            using StreamReader reader = new(stream);
-            txtLicense.Text = stream != null ? reader.ReadToEnd() : "";
+            if (stream != null)
+            {
+                using StreamReader reader = new(stream);
+                txtLicense.Text = reader.ReadToEnd();
+            }
         }
     }
 }

@@ -30,7 +30,7 @@
 		<Resource Include="TRT.png" />
 		<Resource Include="TRT_dark.png" />
 		<EmbeddedResource Include="LICENSE.txt">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</EmbeddedResource>
 	</ItemGroup>
 
