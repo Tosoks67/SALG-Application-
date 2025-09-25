@@ -20,9 +20,19 @@ namespace SALG__Application_
     /// </summary>
     public partial class MainWindow : Window
     {
+        private FrameworkElementFactory btnFEF = new(typeof(Border)) { Name = "border" };
+        private FrameworkElementFactory contentPresenter = new(typeof(ContentPresenter));
+        private Storyboard backgroundToWhite = new() { Children = { new ColorAnimation { To = Color.FromRgb(255, 255, 255), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
+        private Storyboard foregroundToWhite = new() { Children = { new ColorAnimation { To = Color.FromRgb(255, 255, 255), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
+        private Storyboard backgroundToGray = new() { Children = { new ColorAnimation { To = Color.FromRgb(120, 120, 120), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
+        private Storyboard backgroundToBlack = new() { Children = { new ColorAnimation { To = Color.FromRgb(0, 0, 0), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
+        private Storyboard foregroundToBlack = new() { Children = { new ColorAnimation { To = Color.FromRgb(0, 0, 0), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
+        private Style darkButtonStyle = new(typeof(Button));
+        private Style lightButtonStyle = new(typeof(Button));
         public MainWindow()
         {
             InitializeComponent();
+            StyleSetup();
             File.Delete("log.tmp");
             if (!File.Exists("misc") || !CheckMisc(ReadMisc())) { File.WriteAllText("misc", "N|N"); }
             if (ReadMisc()[0] == "Y") { mitDarkMode.IsChecked = true; }
@@ -31,58 +41,21 @@ namespace SALG__Application_
             DarkModeChecker();
         }
 
-        private void DepartmentChecker()
+        private void StyleSetup()
         {
-            if (ReadMisc()[1] == "Y")
-            {
-                mitTRT.IsChecked = true;
-                TRTStringToEnum(ReadData()[1].Replace(' ', '_'), out TRTRank rankTRT);
-                if (rankTRT == TRTRank.None)
-                {
-                    Setup setup = new();
-                    setup.ShowDialog();
-                    ReloadData();
-                }
-            }
-            else
-            {
-                mitTRT.IsChecked = false;
-                RankStringToEnum(ReadData()[1].Replace(' ', '_'), out Rank rankDos);
-                if (rankDos == Rank.None)
-                {
-                    Setup setup = new();
-                    setup.ShowDialog();
-                    ReloadData();
-                }
-            }
-        }
-
-        private void DarkModeChecker()
-        {
-            string department = ReadMisc()[1] == "Y" ? "TRT" : "DoS";
-
-            FrameworkElementFactory btnFEF = new(typeof(Border)) { Name = "border" };
             btnFEF.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
             btnFEF.SetBinding(Border.PaddingProperty, new Binding("Padding") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
             btnFEF.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
             btnFEF.SetValue(Border.BorderThicknessProperty, new Thickness(0.5));
-            FrameworkElementFactory contentPresenter = new(typeof(ContentPresenter));
             contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
             contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
             btnFEF.AppendChild(contentPresenter);
-
-            Storyboard backgroundToWhite = new() { Children = { new ColorAnimation { To = Color.FromRgb(255, 255, 255), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
             Storyboard.SetTargetProperty(backgroundToWhite.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
-            Storyboard foregroundToWhite = new() { Children = { new ColorAnimation { To = Color.FromRgb(255, 255, 255), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
             Storyboard.SetTargetProperty(foregroundToWhite.Children[0], new PropertyPath("(Foreground).(SolidColorBrush.Color)"));
-            Storyboard backgroundToGray = new() { Children = { new ColorAnimation { To = Color.FromRgb(120, 120, 120), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
             Storyboard.SetTargetProperty(backgroundToGray.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
-            Storyboard backgroundToBlack = new() { Children = { new ColorAnimation { To = Color.FromRgb(0, 0, 0), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
             Storyboard.SetTargetProperty(backgroundToBlack.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
-            Storyboard foregroundToBlack = new() { Children = { new ColorAnimation { To = Color.FromRgb(0, 0, 0), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
             Storyboard.SetTargetProperty(foregroundToBlack.Children[0], new PropertyPath("(Foreground).(SolidColorBrush.Color)"));
-
-            Style darkButtonStyle = new(typeof(Button))
+            darkButtonStyle = new(typeof(Button))
             {
                 Setters =
                     {
@@ -179,7 +152,7 @@ namespace SALG__Application_
                         }
                     }
             };
-            Style lightButtonStyle = new(typeof(Button))
+            lightButtonStyle = new(typeof(Button))
             {
                 Setters =
                     {
@@ -276,6 +249,37 @@ namespace SALG__Application_
                         }
                     }
             };
+        }
+
+        private void DepartmentChecker()
+        {
+            if (ReadMisc()[1] == "Y")
+            {
+                mitTRT.IsChecked = true;
+                TRTStringToEnum(ReadData()[1].Replace(' ', '_'), out TRTRank rankTRT);
+                if (rankTRT == TRTRank.None)
+                {
+                    Setup setup = new();
+                    setup.ShowDialog();
+                    ReloadData();
+                }
+            }
+            else
+            {
+                mitTRT.IsChecked = false;
+                RankStringToEnum(ReadData()[1].Replace(' ', '_'), out Rank rankDos);
+                if (rankDos == Rank.None)
+                {
+                    Setup setup = new();
+                    setup.ShowDialog();
+                    ReloadData();
+                }
+            }
+        }
+
+        private void DarkModeChecker()
+        {
+            string department = ReadMisc()[1] == "Y" ? "TRT" : "DoS";
 
             if (mitDarkMode.IsChecked == true)
             {
