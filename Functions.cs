@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Windows.Navigation;
 
 namespace SALG__Application_
 {
@@ -52,7 +53,7 @@ namespace SALG__Application_
                     data[5] = Show Quota Done */
             RankStringToEnum(data[1].Replace(' ', '_'), out Rank rank);
             TRTStringToEnum(data[1].Replace(' ', '_'), out TRTRank TRTRank);
-            if (data.Length != 6 || rank == Rank.None && TRTRank == TRTRank.None || !int.TryParse(data[2], out int _) || !int.TryParse(data[3], out int _) || !int.TryParse(data[4], out int _) || data[5].ToUpper() != "Y" && data[5].ToUpper() != "N")
+            if (data.Length != 6 || (rank == Rank.None && TRTRank == TRTRank.None) || !int.TryParse(data[2], out int _) || !int.TryParse(data[3], out int _) || !int.TryParse(data[4], out int _) || (data[5].ToUpper() != "Y" && data[5].ToUpper() != "N"))
             {
                 File.Delete("data");
                 return false;
@@ -77,7 +78,7 @@ namespace SALG__Application_
         {
             if (!File.Exists("data"))
             {
-                return [""];
+                return ["", "", "", "", "", ""];
             }
             string full = File.ReadAllText("data");
             string[] data = full.Split('|');
@@ -88,7 +89,7 @@ namespace SALG__Application_
         {
             if (!File.Exists("misc"))
             {
-                return [""];
+                return ["", ""];
             }
             string full = File.ReadAllText("misc");
             string[] data = full.Split('|');
@@ -104,6 +105,16 @@ namespace SALG__Application_
             requiredQuota = requiredQuota == "" ? "120" : requiredQuota;
             showQuotaDone = showQuotaDone == "" ? "Y" : showQuotaDone;
             File.WriteAllText("data", username + "|" + currentRank + "|" + quotaDone + "|" + totalTimeServed + "|" + requiredQuota + "|" + showQuotaDone);
+        }
+
+        public static string[] GetAndCheck()
+        {
+            if (!CheckUp(ReadData()))
+            {
+                Setup setup = new();
+                setup.ShowDialog();
+            }
+            return ReadData();
         }
     }
 }

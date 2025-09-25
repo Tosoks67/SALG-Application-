@@ -7,11 +7,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>DoS.ico</ApplicationIcon>
+    <ApplicationIcon>DoS_dark.ico</ApplicationIcon>
   </PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="DoS.ico" />
+		<None Remove="DoS_dark.ico" />
 		<None Remove="DoS_dark.png" />
 		<None Remove="DoS.png" />
 		<None Remove="TRT.png" />
@@ -19,7 +19,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Resource Include="DoS.ico" />
+		<Resource Include="DoS_dark.ico" />
 		<Resource Include="DoS_dark.png" />
 		<Resource Include="DoS.png" />
 		<Resource Include="TRT.png" />

@@ -19,7 +19,7 @@ using static SALG__Application_.Functions;
 namespace SALG__Application_
 {
     /// <summary>
-    /// Logika interakcji dla klasy Window1.xaml
+    /// Logika interakcji dla klasy Setup.xaml
     /// </summary>
     public partial class Setup : Window
     {
@@ -29,28 +29,38 @@ namespace SALG__Application_
             string department = ReadMisc()[1] == "Y" ? "TRT" : "DoS";
             IconFor.Source = new BitmapImage(new Uri("/" + department + "_dark.png", UriKind.Relative));
             IconBack.Source = new BitmapImage(new Uri("/" + department + "_dark.png", UriKind.Relative));
-            if (File.Exists("data"))
+            string[] data = ReadData();
+            if (CheckUp(data))
             {
-                string[] data = ReadData();
-                if (CheckUp(data))
+                txtUsername.Text = data[0];
+                RankStringToEnum(data[1].Replace(' ', '_'), out Rank rankDoS, Rank.Cadet);
+                TRTStringToEnum(data[1].Replace(' ', '_'), out TRTRank rankTRT, TRTRank.TRT_Cadet);
+                if (ReadMisc()[1] == "Y")
                 {
-                    txtUsername.Text = data[0];
-                    RankStringToEnum(data[1].Replace(' ', '_'), out Rank rankDoS, Rank.Cadet);
-                    TRTStringToEnum(data[1].Replace(' ', '_'), out TRTRank rankTRT, TRTRank.Cadet);
-                    if (ReadMisc()[1] == "Y")
-                    {
-                        cbxCurrentTRT.Visibility = Visibility.Visible;
-                        cbxCurrentTRT.Text = rankTRT.ToString().Replace('_', ' ');
-                    }
-                    else
-                    {
-                        cbxCurrentRank.Visibility = Visibility.Visible;
-                        cbxCurrentRank.Text = rankDoS.ToString().Replace('_', ' ');
-                    }
-                    numQuotaDone.Text = data[2];
-                    numTotalTime.Text = data[3];
-                    numCurrentQuota.Text = data[4];
-                    txtPermamentNote.Text = File.Exists("notes") ? File.ReadAllText("notes") : "";
+                    cbxCurrentTRT.Visibility = Visibility.Visible;
+                    cbxCurrentTRT.Text = rankTRT.ToString().Replace('_', ' ').Substring(4);
+                }
+                else
+                {
+                    cbxCurrentRank.Visibility = Visibility.Visible;
+                    cbxCurrentRank.Text = rankDoS.ToString().Replace('_', ' ');
+                }
+                numQuotaDone.Text = data[2];
+                numTotalTime.Text = data[3];
+                numCurrentQuota.Text = data[4];
+                txtPermamentNote.Text = File.Exists("notes") ? File.ReadAllText("notes") : "";
+            }
+            else
+            {
+                if (ReadMisc()[1] == "Y")
+                {
+                    cbxCurrentTRT.Visibility = Visibility.Visible;
+                    cbxCurrentTRT.Text = "Cadet";
+                }
+                else
+                {
+                    cbxCurrentRank.Visibility = Visibility.Visible;
+                    cbxCurrentRank.Text = "Cadet";
                 }
             }
         }
@@ -58,6 +68,27 @@ namespace SALG__Application_
         private void InputNumCheck(object sender, TextCompositionEventArgs e)
         {
             e.Handled = !int.TryParse(e.Text, out _);
+        }
+
+        private void KeyDownNumCheck(object sender, KeyEventArgs e)
+        {
+            if (sender is TextBox tBox)
+            {
+                if (e.Key == Key.Left)
+                {
+                    if (tBox.CaretIndex > 0) { tBox.CaretIndex -= 1; return; }
+                }
+                else if (e.Key == Key.Right)
+                {
+                    if (tBox.CaretIndex < tBox.GetLineLength(0)) { tBox.CaretIndex += 1; return; }
+                }
+                else if (e.Key == Key.Back && tBox.CaretIndex > 0 && tBox.Text.Length > 0)
+                {
+                    tBox.Text = tBox.Text.Remove(tBox.CaretIndex - 1, 1);
+                    tBox.CaretIndex -= tBox.CaretIndex - 1;
+                    e.Handled = true;
+                }
+            }
         }
 
         private void PasteNumCheck(object sender, ExecutedRoutedEventArgs e)
@@ -70,7 +101,29 @@ namespace SALG__Application_
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
+            string user = txtUsername.Text;
+            string qDone = numQuotaDone.Text;
+            string tTime = numTotalTime.Text;
+            string cQuota = numCurrentQuota.Text;
+            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(qDone) || string.IsNullOrWhiteSpace(tTime) || string.IsNullOrWhiteSpace(cQuota))
+            {
+                MessageBox.Show("Please fill in all fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             this.Close();
+        }
+
+        private void Window_Close(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            string user = txtUsername.Text;
+            string qDone = numQuotaDone.Text;
+            string tTime = numTotalTime.Text;
+            string cQuota = numCurrentQuota.Text;
+            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(qDone) || string.IsNullOrWhiteSpace(tTime) || string.IsNullOrWhiteSpace(cQuota))
+            {
+                e.Cancel = true;
+                MessageBox.Show("Please fill in all fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void txtTitle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -80,17 +133,17 @@ namespace SALG__Application_
 
         private void btnSaveButton_Click(Object sender, RoutedEventArgs e)
         {
+            string rank = ReadMisc()[1] == "Y" ? "TRT " + cbxCurrentTRT.Text : cbxCurrentRank.Text;
             string user = txtUsername.Text;
-            string rank = ReadMisc()[1] == "Y" ? cbxCurrentTRT.Text : cbxCurrentRank.Text;
             string qDone = numQuotaDone.Text;
             string tTime = numTotalTime.Text;
             string cQuota = numCurrentQuota.Text;
-            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(rank) || string.IsNullOrWhiteSpace(qDone) || string.IsNullOrWhiteSpace(tTime) || string.IsNullOrWhiteSpace(cQuota))
+            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(qDone) || string.IsNullOrWhiteSpace(tTime) || string.IsNullOrWhiteSpace(cQuota))
             {
                 MessageBox.Show("Please fill in all fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            string sQDone = ReadData().Length == 6 ? ReadData()[5] : "Y";
+            string sQDone = ReadData()[5];
             WriteData(user, rank, qDone, tTime, cQuota, sQDone);
             File.WriteAllText("notes", txtPermamentNote.Text);
             this.Close();

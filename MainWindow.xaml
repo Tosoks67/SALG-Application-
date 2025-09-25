@@ -8,9 +8,10 @@
         Title="Security Activity Log Generator (SALG)"
         Height="450"
         Width="800"
-        Icon="DoS.ico"
+        Icon="DoS_dark.ico"
         MinWidth="800"
-        MinHeight="450">
+        MinHeight="450"
+        Closing="Window_Close">
     <Window.Resources>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="Black"/>
@@ -94,6 +95,7 @@
                     <RowDefinition/>
                     <RowDefinition/>
                     <RowDefinition/>
+                    <RowDefinition/>
                 </Grid.RowDefinitions>
                 <Label Content="Start Time:" VerticalAlignment="Bottom"/>
                 <Label Content="End Time:" VerticalAlignment="Bottom" Grid.Row="2"/>
@@ -101,14 +103,26 @@
                 <Label Content=":" VerticalAlignment="Top" Grid.Row="1" Grid.Column="1" HorizontalContentAlignment="Center" FontSize="5" FontWeight="UltraBold"/>
                 <Label Content=":" VerticalAlignment="Top" Grid.Row="3" Grid.Column="1" HorizontalContentAlignment="Center" FontSize="5" FontWeight="UltraBold"/>
 
-                <TextBox x:Name="numStartHour" PreviewTextInput="InputNumCheck" CommandManager.PreviewExecuted="PasteNumCheck" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" MaxLength="2" HorizontalContentAlignment="Right"/>
-                <TextBox x:Name="numStartMinute" PreviewTextInput="InputNumCheck" CommandManager.PreviewExecuted="PasteNumCheck" Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" MaxLength="2" HorizontalContentAlignment="Left"/>
-                
-                <TextBox x:Name="numEndHour" PreviewTextInput="InputNumCheck" CommandManager.PreviewExecuted="PasteNumCheck" Grid.Row="3" Grid.Column="0" VerticalAlignment="Top" MaxLength="2" HorizontalContentAlignment="Right"/>
-                <TextBox x:Name="numEndMinute" PreviewTextInput="InputNumCheck" CommandManager.PreviewExecuted="PasteNumCheck" Grid.Row="3" Grid.Column="2" VerticalAlignment="Top" MaxLength="2" HorizontalContentAlignment="Left"/>
+                <TextBox x:Name="numStartHour" PreviewTextInput="InputNumCheck" CommandManager.PreviewExecuted="PasteNumCheck" PreviewKeyDown="KeyDownNumCheck" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" MaxLength="2" HorizontalContentAlignment="Right"/>
+                <TextBox x:Name="numStartMinute" PreviewTextInput="InputNumCheck" CommandManager.PreviewExecuted="PasteNumCheck" PreviewKeyDown="KeyDownNumCheck" Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" MaxLength="2" HorizontalContentAlignment="Left"/>
 
-                <Button x:Name="btnGenerateLog" Content="Generate Log" Grid.Row="4" Click="btnGenerateLog_Click" Margin="15"/>
+                <TextBox x:Name="numEndHour" PreviewTextInput="InputNumCheck" CommandManager.PreviewExecuted="PasteNumCheck" PreviewKeyDown="KeyDownNumCheck" Grid.Row="3" Grid.Column="0" VerticalAlignment="Top" MaxLength="2" HorizontalContentAlignment="Right"/>
+                <TextBox x:Name="numEndMinute" PreviewTextInput="InputNumCheck" CommandManager.PreviewExecuted="PasteNumCheck" PreviewKeyDown="KeyDownNumCheck" Grid.Row="3" Grid.Column="2" VerticalAlignment="Top" MaxLength="2" HorizontalContentAlignment="Left"/>
+
+                <Label Content="Note: " Grid.Row="4" VerticalContentAlignment="Center" HorizontalContentAlignment="Right"/>
+                <TextBox x:Name="txtNote" Grid.Row="4" Grid.Column="2" HorizontalScrollBarVisibility="Auto"/>
+
+                <Button x:Name="btnGenerateLog" Content="Generate Log" Grid.Row="5" Click="btnGenerateLog_Click" Margin="15"/>
             </Grid>
+            <Grid x:Name="grdLogGrid" Width="400" HorizontalAlignment="Right" Margin="15" Visibility="Hidden">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="30"/>
+                </Grid.RowDefinitions>
+                <TextBox x:Name="txtLog" TextWrapping="NoWrap" IsReadOnly="True"/>
+                <Button x:Name="btnCopyLog" Grid.Row="1" Content="Copy Log (Save Data)" Width="150" HorizontalAlignment="Right" Click="btnCopyLog_Click"/>
+            </Grid>
+            <Button x:Name="btnQuotaReset" Content="Reset Quota Done" VerticalAlignment="Bottom" Width="150" Click="btnQuotaReset_Click" Margin="0,0,0,15"/>
         </Grid>
     </Grid>
 </Window>

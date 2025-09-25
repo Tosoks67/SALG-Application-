@@ -31,17 +31,17 @@
     public enum TRTRank
     {
         None,
-        Cadet,
-        Operative,
-        Sergeant,
-        First_Sergeant,
-        Captain
+        TRT_Cadet,
+        TRT_Operative,
+        TRT_Sergeant,
+        TRT_First_Sergeant,
+        TRT_Captain
     }
 
     public enum TRTRankShort
     {
-        SGT = TRTRank.Sergeant,
-        FSGT = TRTRank.First_Sergeant,
-        CPT = TRTRank.Captain
+        SGT = TRTRank.TRT_Sergeant,
+        FSGT = TRTRank.TRT_First_Sergeant,
+        CPT = TRTRank.TRT_Captain
     }
 }
