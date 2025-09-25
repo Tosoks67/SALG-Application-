@@ -20,6 +20,7 @@
 		<None Remove="DoS.png" />
 		<None Remove="TRT.png" />
 		<None Remove="TRT_dark.png" />
+		<None Remove="LICENSE.txt" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -28,6 +29,9 @@
 		<Resource Include="DoS.png" />
 		<Resource Include="TRT.png" />
 		<Resource Include="TRT_dark.png" />
+		<EmbeddedResource Include="LICENSE.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
 	</ItemGroup>
 
 </Project>

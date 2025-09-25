@@ -20,8 +20,10 @@ namespace SALG__Application_
     /// </summary>
     public partial class MainWindow : Window
     {
-        private FrameworkElementFactory btnFEF = new(typeof(Border)) { Name = "border" };
-        private FrameworkElementFactory contentPresenter = new(typeof(ContentPresenter));
+        private FrameworkElementFactory btnFEFLight = new(typeof(Border)) { Name = "border" };
+        private FrameworkElementFactory btnFEFDark = new(typeof(Border)) { Name = "border" };
+        private FrameworkElementFactory contentPresenterLight = new(typeof(ContentPresenter));
+        private FrameworkElementFactory contentPresenterDark = new(typeof(ContentPresenter));
         private Storyboard backgroundToWhite = new() { Children = { new ColorAnimation { To = Color.FromRgb(255, 255, 255), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
         private Storyboard foregroundToWhite = new() { Children = { new ColorAnimation { To = Color.FromRgb(255, 255, 255), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
         private Storyboard backgroundToGray = new() { Children = { new ColorAnimation { To = Color.FromRgb(120, 120, 120), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
@@ -31,8 +33,8 @@ namespace SALG__Application_
         private Style lightButtonStyle = new(typeof(Button));
         public MainWindow()
         {
-            InitializeComponent();
             StyleSetup();
+            InitializeComponent();
             File.Delete("log.tmp");
             if (!File.Exists("misc") || !CheckMisc(ReadMisc())) { File.WriteAllText("misc", "N|N"); }
             if (ReadMisc()[0] == "Y") { mitDarkMode.IsChecked = true; }
@@ -43,13 +45,24 @@ namespace SALG__Application_
 
         private void StyleSetup()
         {
-            btnFEF.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            btnFEF.SetBinding(Border.PaddingProperty, new Binding("Padding") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            btnFEF.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
-            btnFEF.SetValue(Border.BorderThicknessProperty, new Thickness(0.5));
-            contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-            btnFEF.AppendChild(contentPresenter);
+            btnFEFLight.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+            btnFEFLight.SetBinding(Border.PaddingProperty, new Binding("Padding") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+            btnFEFLight.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
+            btnFEFLight.SetValue(Border.BorderThicknessProperty, new Thickness(0.5));
+            btnFEFLight.SetValue(Border.BorderBrushProperty, Brushes.Black);
+            contentPresenterLight.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            contentPresenterLight.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            btnFEFLight.AppendChild(contentPresenterLight);
+
+            btnFEFDark.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+            btnFEFDark.SetBinding(Border.PaddingProperty, new Binding("Padding") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+            btnFEFDark.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
+            btnFEFDark.SetValue(Border.BorderThicknessProperty, new Thickness(0.5));
+            btnFEFDark.SetValue(Border.BorderBrushProperty, Brushes.White);
+            contentPresenterDark.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            contentPresenterDark.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            btnFEFDark.AppendChild(contentPresenterDark);
+
             Storyboard.SetTargetProperty(backgroundToWhite.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
             Storyboard.SetTargetProperty(foregroundToWhite.Children[0], new PropertyPath("(Foreground).(SolidColorBrush.Color)"));
             Storyboard.SetTargetProperty(backgroundToGray.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
@@ -115,7 +128,7 @@ namespace SALG__Application_
                                     }
                                 }
                             },
-                            VisualTree = btnFEF
+                            VisualTree = btnFEFDark
                         })
                     },
                 Triggers =
@@ -212,7 +225,7 @@ namespace SALG__Application_
                                     }
                                 }
                             },
-                            VisualTree = btnFEF
+                            VisualTree = btnFEFLight
                         })
                     },
                 Triggers =
@@ -286,7 +299,6 @@ namespace SALG__Application_
                 File.WriteAllText("misc", "Y|" + ReadMisc()[1]);
                 gstStart.Color = Color.FromRgb(255, 255, 255);
                 gstStop.Color = Color.FromRgb(0, 0, 0);
-                btnFEF.SetValue(Border.BorderBrushProperty, Brushes.White);
                 this.Resources[typeof(Label)] = new Style(typeof(Label))
                 {
                     Setters =
@@ -319,7 +331,6 @@ namespace SALG__Application_
                 File.WriteAllText("misc", "N|" + ReadMisc()[1]);
                 gstStart.Color = Color.FromRgb(84, 84, 84);
                 gstStop.Color = Color.FromRgb(255, 255, 255);
-                btnFEF.SetValue(Border.BorderBrushProperty, Brushes.Black);
                 this.Resources[typeof(Label)] = new Style(typeof(Label))
                 {
                     Setters =
@@ -568,6 +579,12 @@ namespace SALG__Application_
         private void Window_Close(object sender, System.ComponentModel.CancelEventArgs e)
         {
             File.Delete("log.tmp");
+        }
+
+        private void mitLicense_Click(object sender, RoutedEventArgs e)
+        {
+            License license = new();
+            license.ShowDialog();
         }
     }
 }
