@@ -365,7 +365,9 @@ namespace SALG__Application_
         private static string GenerateLog(string username, string rank, string sTime, string eTime, string qDone, string tOnSite, string tTime, string quota, string showQDone, string notes = "")
         {
             RankStringToEnum(rank.Replace(' ', '_'), out Rank rankDoS);
+            TRTStringToEnum(rank.Replace(' ', '_'), out TRTRank rankTRT);
             rank = rankDoS != Rank.None ? "Security " + rank : rank;
+            rank = rankTRT != TRTRank.None ? "Tactical Response " + rank : rank;
 
             showQDone = (showQDone.ToUpper() == "Y") ? "\r\n-# Quota: " + qDone + " / " + quota : "";
 
