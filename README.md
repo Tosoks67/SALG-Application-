@@ -25,6 +25,8 @@ Upon the first launch of the application *(Or if it has been fired from the Main
 
 *These files store your data. Do NOT delete them **(Unless you wish to delete all of your data that is)***
 
+*There's also a file called "misc" that will be created. It stores your preferences **(Dark Mode, TRT ranks)***
+
 ### SALG (Application) and the console version of it use the same data format *(meaning that you can use "data" and "notes" for both versions)*
 
 
@@ -41,6 +43,7 @@ In here, you can:
   - Toggle whether you want your Quota Done shown
   - Toggle Dark Mode
   - Toggle TRT ranks ***(I only added the ranks, as I don't know how your logs look, sorry; Might add customizable logs in the future; Will trigger Setup again)***
+  - View the License
 
 ### On the main UI
   - Generate a log
