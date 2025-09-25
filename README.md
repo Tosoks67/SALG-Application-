@@ -40,7 +40,7 @@ In here, you can:
   - Run Setup again
   - Toggle whether you want your Quota Done shown
   - Toggle Dark Mode
-  - Toggle TRT ranks ***(I only added the ranks, as I don't know how your logs look, sorry [Will trigger Setup again])***
+  - Toggle TRT ranks ***(I only added the ranks, as I don't know how your logs look, sorry; Might add customizable logs in the future; Will trigger Setup again)***
 
 ### On the main UI
   - Generate a log
