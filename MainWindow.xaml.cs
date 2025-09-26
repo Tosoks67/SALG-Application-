@@ -452,7 +452,7 @@ namespace SALG__Application_
             }
             int difference = (int)(endTime - startTime).TotalMinutes;
             string tTime = (Convert.ToInt32(data[3]) + difference).ToString();
-            string qDone = (Convert.ToInt32(data[4]) + difference).ToString();
+            string qDone = (Convert.ToInt32(data[2]) + difference).ToString();
             File.Delete("log.tmp");
             File.WriteAllText("log.tmp", tTime + "\n" + qDone);
             File.SetAttributes("log.tmp", FileAttributes.Hidden);
