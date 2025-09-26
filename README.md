@@ -56,7 +56,7 @@ In here, you can:
 
 The process itself is quite simple.
 
-The space labelled `Note: ` will always contain your Permament Note. You can modify the text however you want.
+The space labelled `Note: ` will always be autofilled with your Permament Note. You can modify it however you want.
 
 You just need to fill the start and end hour and minute. ***(You can use arrows to move between the input boxes; 2 characters maximum for each box)***
 
