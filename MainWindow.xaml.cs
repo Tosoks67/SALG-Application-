@@ -583,7 +583,7 @@ namespace SALG__Application_
 
         private void mitLicense_Click(object sender, RoutedEventArgs e)
         {
-            License license = new();
+            LicWindow license = new();
             license.ShowDialog();
         }
     }

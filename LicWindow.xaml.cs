@@ -19,9 +19,9 @@ namespace SALG__Application_
     /// <summary>
     /// Logika interakcji dla klasy License.xaml
     /// </summary>
-    public partial class License : Window
+    public partial class LicWindow : Window
     {
-        public License()
+        public LicWindow()
         {
             InitializeComponent();
             var assembly = Assembly.GetExecutingAssembly();
