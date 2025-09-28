@@ -381,8 +381,7 @@ namespace SALG__Application_
         {
             RankStringToEnum(rank.Replace(' ', '_'), out Rank rankDoS);
             TRTStringToEnum(rank.Replace(' ', '_'), out TRTRank rankTRT);
-            rank = rankDoS != Rank.None ? "Security " + rank : rank;
-            rank = rankTRT != TRTRank.None ? "Tactical Response " + rank : rank;
+            rank = rankDoS != Rank.None ? "Security " + rank : rankTRT != TRTRank.None ? "Tactical Response " + rank.Substring(4) : rank;
 
             showQDone = (showQDone.ToUpper() == "Y") ? "\r\n-# Quota: " + qDone + " / " + quota : "";
 
