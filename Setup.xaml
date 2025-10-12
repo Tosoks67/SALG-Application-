@@ -154,7 +154,7 @@
                 <TextBox x:Name="numCurrentQuota" Grid.Column="1" Grid.Row="4" PreviewTextInput="InputNumCheck" CommandManager.PreviewExecuted="PasteNumCheck"/>
 
                 <Label Grid.Row="5">Permament Note:</Label>
-                <TextBox x:Name="txtPermamentNote" Grid.Column="1" Grid.Row="5" AcceptsReturn="True" AcceptsTab="True"/>
+                <TextBox x:Name="txtPermamentNote" Grid.Column="1" Grid.Row="5"/>
 
                 <Button x:Name="btnSaveButton" Content="Save" Margin="5,5,100,5" Grid.Row="6" Height="30" VerticalAlignment="Bottom" BorderBrush="White" Background="Black" Foreground="White" Click="btnSaveButton_Click">
                     <Button.Style>
