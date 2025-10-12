@@ -60,7 +60,7 @@ In here, you can:
 ![Format Editor Window](img/format.png)
 
 As you might've guessed, in here you can change the format of your logs.
-The `$()` values get replaced by their coresponding data
+The `$()` values get replaced by their corresponding data
 
 The `$(q)` marker goes at the start of a line you want to be togglable using the **Show Quota** feature *(It basically just removes the line(s) if **Show Quota** is unchecked)*
 
