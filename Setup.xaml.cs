@@ -15,6 +15,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using static SALG__Application_.Functions;
+using static SALG__Application_.FilePaths;
+using static SALG__Application_.SaveHandler;
+using static SALG__Application_.Defaults;
 
 namespace SALG__Application_
 {
@@ -23,93 +26,71 @@ namespace SALG__Application_
     /// </summary>
     public partial class Setup : Window
     {
-        public Setup()
+        public UserData UData { get; private set; }
+        private readonly bool TRT;
+        public string notes;
+        public Setup(UserData ud, bool tactResTean, string n)
         {
+            UData = ud;
+            TRT = tactResTean;
+            notes = n;
             InitializeComponent();
-            string department = ReadMisc()[1] == "Y" ? "TRT" : "DoS";
+            string department = TRT ? "TRT" : "DoS";
             IconFor.Source = new BitmapImage(new Uri("/" + department + "_dark.png", UriKind.Relative));
             IconBack.Source = new BitmapImage(new Uri("/" + department + "_dark.png", UriKind.Relative));
-            string[] data = ReadData();
-            if (CheckUp(data))
+            txtUsername.Text = UData.Username;
+            if (TRT)
             {
-                txtUsername.Text = data[0];
-                RankStringToEnum(data[1].Replace(' ', '_'), out Rank rankDoS, Rank.Cadet);
-                TRTStringToEnum(data[1].Replace(' ', '_'), out TRTRank rankTRT, TRTRank.TRT_Cadet);
-                if (ReadMisc()[1] == "Y")
-                {
-                    cbxCurrentTRT.Visibility = Visibility.Visible;
-                    cbxCurrentTRT.Text = rankTRT.ToString().Replace('_', ' ').Substring(4);
-                }
-                else
-                {
-                    cbxCurrentRank.Visibility = Visibility.Visible;
-                    cbxCurrentRank.Text = rankDoS.ToString().Replace('_', ' ');
-                }
-                numQuotaDone.Text = data[2];
-                numTotalTime.Text = data[3];
-                numCurrentQuota.Text = data[4];
-                txtPermamentNote.Text = File.Exists("notes") ? File.ReadAllText("notes") : "";
+                cbxCurrentTRT.Visibility = Visibility.Visible;
+                cbxCurrentTRT.Text = UData.TRTRank != TRTRank.None ? UData.TRTRank.ToString().Replace('_', ' ')[4..] : "Cadet";
             }
             else
             {
-                if (ReadMisc()[1] == "Y")
-                {
-                    cbxCurrentTRT.Visibility = Visibility.Visible;
-                    cbxCurrentTRT.Text = "Cadet";
-                }
-                else
-                {
-                    cbxCurrentRank.Visibility = Visibility.Visible;
-                    cbxCurrentRank.Text = "Cadet";
-                }
+                cbxCurrentRank.Visibility = Visibility.Visible;
+                cbxCurrentRank.Text = UData.Rank != Rank.None ? UData.Rank.ToString().Replace('_', ' ') : "Cadet";
             }
+            numQuotaDone.Text = UData.QuotaDone.ToString();
+            numTotalTime.Text = UData.TotalTime.ToString();
+            numCurrentQuota.Text = UData.CurrentQuota.ToString();
+            txtPermamentNote.Text = notes;
+        }
+
+        private void Save()
+        {
+            UData.RankString = TRT ? "TRT " + cbxCurrentTRT.Text : cbxCurrentRank.Text;
+            UData.Username = txtUsername.Text;
+            if (int.TryParse(numQuotaDone.Text, out int qDone))
+                UData.QuotaDone = qDone;
+            else
+                UData.QuotaDone = 0;
+
+            if (int.TryParse(numTotalTime.Text, out int tTime))
+                UData.TotalTime = tTime;
+            else
+                UData.TotalTime = 0;
+
+            if (int.TryParse(numCurrentQuota.Text, out int cQuota))
+                UData.CurrentQuota = cQuota;
+            else
+                UData.CurrentQuota = 0;
+
+            notes = txtPermamentNote.Text;
+            SaveUserData(UData);
+            File.WriteAllText(NotesPath, notes + NotesMessage);
         }
 
         private void InputNumCheck(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = !int.TryParse(e.Text, out _);
-        }
-
-        private void KeyDownNumCheck(object sender, KeyEventArgs e)
-        {
-            if (sender is TextBox tBox)
-            {
-                if (e.Key == Key.Left)
-                {
-                    if (tBox.CaretIndex > 0) { tBox.CaretIndex -= 1; return; }
-                }
-                else if (e.Key == Key.Right)
-                {
-                    if (tBox.CaretIndex < tBox.GetLineLength(0)) { tBox.CaretIndex += 1; return; }
-                }
-                else if (e.Key == Key.Back && tBox.CaretIndex > 0 && tBox.Text.Length > 0)
-                {
-                    tBox.Text = tBox.Text.Remove(tBox.CaretIndex - 1, 1);
-                    tBox.CaretIndex -= tBox.CaretIndex - 1;
-                    e.Handled = true;
-                }
-            }
+            e.Handled = !int.TryParse(e.Text, out _) && e.Text != "";
         }
 
         private void PasteNumCheck(object sender, ExecutedRoutedEventArgs e)
         {
-            if (e.Command == ApplicationCommands.Paste && !int.TryParse(Clipboard.GetText(), out _))
-            {
-                e.Handled = true;
-            }
+            e.Handled = e.Command == ApplicationCommands.Paste && !int.TryParse(Clipboard.GetText(), out _);
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            string user = txtUsername.Text;
-            string qDone = numQuotaDone.Text;
-            string tTime = numTotalTime.Text;
-            string cQuota = numCurrentQuota.Text;
-            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(qDone) || string.IsNullOrWhiteSpace(tTime) || string.IsNullOrWhiteSpace(cQuota))
-            {
-                MessageBox.Show("Please fill in all fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
             this.Close();
         }
 
@@ -123,7 +104,10 @@ namespace SALG__Application_
             {
                 e.Cancel = true;
                 MessageBox.Show("Please fill in all fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
+            Save();
+            DialogResult = true;
         }
 
         private void txtTitle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -133,19 +117,6 @@ namespace SALG__Application_
 
         private void btnSaveButton_Click(Object sender, RoutedEventArgs e)
         {
-            string rank = ReadMisc()[1] == "Y" ? "TRT " + cbxCurrentTRT.Text : cbxCurrentRank.Text;
-            string user = txtUsername.Text;
-            string qDone = numQuotaDone.Text;
-            string tTime = numTotalTime.Text;
-            string cQuota = numCurrentQuota.Text;
-            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(qDone) || string.IsNullOrWhiteSpace(tTime) || string.IsNullOrWhiteSpace(cQuota))
-            {
-                MessageBox.Show("Please fill in all fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-            string sQDone = ReadData()[5];
-            WriteData(user, rank, qDone, tTime, cQuota, sQDone);
-            File.WriteAllText("notes", txtPermamentNote.Text);
             this.Close();
         }
     }
