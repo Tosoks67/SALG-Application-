@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SALG__Application_"
         mc:Ignorable="d"
-        Title="AboutWindow" Height="145" Width="560"
+        Title="About" Height="150" Width="560"
         ResizeMode="NoResize">
     <Grid>
         <Grid.RowDefinitions>
@@ -15,7 +15,7 @@
 
         <TextBlock x:Name="txtAbout" TextWrapping="WrapWithOverflow" Margin="10">
             SALG (Security Activity Log Generator) is a free and open-source application used for generating Activity Logs for the Department of Security in the Roblox Site-19 community.
-            <LineBreak/><LineBreak/><LineBreak/>
+            <LineBreak/><LineBreak/>
             GitHub repository:
         </TextBlock>
         <TextBlock Margin="10,0,0,0" Grid.Row="1">
