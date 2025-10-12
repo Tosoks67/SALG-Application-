@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,7 +12,10 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static SALG__Application_.FilePaths;
 using static SALG__Application_.Functions;
+using static SALG__Application_.SaveHandler;
+using static SALG__Application_.Defaults;
 
 namespace SALG__Application_
 {
@@ -31,18 +35,45 @@ namespace SALG__Application_
         private Storyboard foregroundToBlack = new() { Children = { new ColorAnimation { To = Color.FromRgb(0, 0, 0), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
         private Style darkButtonStyle = new(typeof(Button));
         private Style lightButtonStyle = new(typeof(Button));
+
+        private Prefs prefs = LoadPreferences();
+        private UserData userData = LoadUserData();
+        private string format = File.Exists(FormatPath) ? File.ReadAllText(FormatPath) : DefaultFormat;
+        private string note = LoadNotes();
+
+        private bool isDarkMode = false;
+        private bool isTRT = false;
+
+        private int log_qDone = 0;
+        private int log_tTime = 0;
         public MainWindow()
         {
+            Directory.CreateDirectory(AppFolder);
             StyleSetup();
             InitializeComponent();
-            File.Delete("log.tmp");
-            if (!File.Exists("misc") || !CheckMisc(ReadMisc())) { File.WriteAllText("misc", "N|N"); }
-            if (ReadMisc()[0] == "Y") { mitDarkMode.IsChecked = true; }
-            if (!File.Exists("data") || !CheckUp(ReadData())) { Setup setup = new(); setup.ShowDialog(); ReloadData(); } else { ReloadData(); }
+            mitDarkMode.IsChecked = prefs.DarkMode;
+            if (!CheckRanks(userData, out UserData udSafe, prefs.TRT))
+            {
+                Setup setup = new(udSafe, prefs.TRT, note);
+                setup.ShowDialog();
+                if (setup.DialogResult ?? false)
+                {
+                    userData = setup.UData;
+                    note = setup.notes;
+                    ReloadData(true);
+                }
+            }
+            else
+            {
+                ReloadData(true);
+            }
             DepartmentChecker();
             DarkModeChecker();
         }
 
+        /// <summary>
+        /// Setup styles to later use in DarkModeChecker()
+        /// </summary>
         private void StyleSetup()
         {
             btnFEFLight.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
@@ -266,37 +297,42 @@ namespace SALG__Application_
 
         private void DepartmentChecker()
         {
-            if (ReadMisc()[1] == "Y")
+            mitTRT.IsChecked = prefs.TRT;
+            if ((prefs.TRT && userData.TRTRank == TRTRank.None) || (!prefs.TRT && userData.Rank == Rank.None))
             {
-                mitTRT.IsChecked = true;
-                TRTStringToEnum(ReadData()[1].Replace(' ', '_'), out TRTRank rankTRT);
-                if (rankTRT == TRTRank.None)
+                CheckRanks(userData, out UserData udSafe, prefs.TRT);
+                Setup setup = new(udSafe, prefs.TRT, note);
+                setup.ShowDialog();
+                if (setup.DialogResult ?? false)
                 {
-                    Setup setup = new();
-                    setup.ShowDialog();
-                    ReloadData();
+                    userData = setup.UData;
+                    note = setup.notes;
+                    ReloadData(true);
+                } else
+                {
+                    prefs.TRT = isTRT;
+                    mitTRT.IsChecked = prefs.TRT;
                 }
             }
-            else
-            {
-                mitTRT.IsChecked = false;
-                RankStringToEnum(ReadData()[1].Replace(' ', '_'), out Rank rankDos);
-                if (rankDos == Rank.None)
-                {
-                    Setup setup = new();
-                    setup.ShowDialog();
-                    ReloadData();
-                }
-            }
+            isTRT = prefs.TRT;
         }
 
+        /// <summary>
+        /// Check if Dark Mode is enabled and change styles accordingly
+        /// </summary>
         private void DarkModeChecker()
         {
-            string department = ReadMisc()[1] == "Y" ? "TRT" : "DoS";
+            string imgSource = prefs.TRT ? "TRT" : "DoS";
+            imgSource = prefs.DarkMode ? imgSource + "_dark.png" : imgSource + ".png";
 
-            if (mitDarkMode.IsChecked == true)
+            IconFor.Source = new BitmapImage(new Uri("/" + imgSource, UriKind.Relative));
+            IconBack.Source = new BitmapImage(new Uri("/" + imgSource, UriKind.Relative));
+
+            mitDarkMode.IsChecked = prefs.DarkMode;
+            isDarkMode = prefs.DarkMode;
+
+            if (mitDarkMode.IsChecked)
             {
-                File.WriteAllText("misc", "Y|" + ReadMisc()[1]);
                 gstStart.Color = Color.FromRgb(255, 255, 255);
                 gstStop.Color = Color.FromRgb(0, 0, 0);
                 this.Resources[typeof(Label)] = new Style(typeof(Label))
@@ -323,12 +359,9 @@ namespace SALG__Application_
                     }
                 };
                 this.Resources[typeof(Button)] = darkButtonStyle;
-                IconFor.Source = new BitmapImage(new Uri("/" + department + "_dark.png", UriKind.Relative));
-                IconBack.Source = new BitmapImage(new Uri("/" + department + "_dark.png", UriKind.Relative));
             }
             else
             {
-                File.WriteAllText("misc", "N|" + ReadMisc()[1]);
                 gstStart.Color = Color.FromRgb(84, 84, 84);
                 gstStop.Color = Color.FromRgb(255, 255, 255);
                 this.Resources[typeof(Label)] = new Style(typeof(Label))
@@ -355,113 +388,103 @@ namespace SALG__Application_
                     }
                 };
                 this.Resources[typeof(Button)] = lightButtonStyle;
-                IconFor.Source = new BitmapImage(new Uri("/" + department + ".png", UriKind.Relative));
-                IconBack.Source = new BitmapImage(new Uri("/" + department + ".png", UriKind.Relative));
-
             }
         }
 
-        private void ReloadData()
+        /// <summary>
+        /// Reload all data, optionally the note and additionally check dark mode and department
+        /// </summary>
+        private void ReloadData(bool resetNote = false)
         {
-            string[] data = ReadData();
-            if (CheckUp(data))
-            {
-                txtUsername.Content = data[0];
-                RankStringToEnum(data[1].Replace(' ', '_'), out Rank rankDoS);
-                TRTStringToEnum(data[1].Replace(' ', '_'), out TRTRank rankTRT);
-                txtCurrentRank.Content = ReadMisc()[1] == "Y" ? rankTRT.ToString().Replace('_', ' ').Substring(4) : rankDoS.ToString().Replace('_', ' ');
-                numQuotaDone.Content = data[2] + " / " + data[4] + " minutes";
-                numTotalTime.Content = data[3] + " minute(s)";
-                txtNote.Text = File.Exists("notes") ? File.ReadAllText("notes") : "";
-                mitShowQuota.IsChecked = data[5] == "Y";
-            }
+            txtUsername.Content = userData.Username;
+            txtCurrentRank.Content = prefs.TRT ? userData.TRTRank.ToString().Replace('_', ' ').Substring(4) : userData.Rank.ToString().Replace('_', ' ');
+            numQuotaDone.Content = userData.QuotaDone + " / " + userData.CurrentQuota + " minutes";
+            numTotalTime.Content = userData.TotalTime + " minute(s)";
+            if (resetNote) txtNote.Text = note;
+            mitShowQuota.IsChecked = userData.ShowQuotaDone;
+
+            mitTRT.IsChecked = prefs.TRT;
+            mitDarkMode.IsChecked = prefs.DarkMode;
+
+            if (isDarkMode != prefs.DarkMode)
+                DarkModeChecker();
+            if (isTRT != prefs.TRT)
+                DepartmentChecker();
         }
 
-        private static string GenerateLog(string username, string rank, string sTime, string eTime, string qDone, string tOnSite, string tTime, string quota, string showQDone, string notes = "")
-        {
-            RankStringToEnum(rank.Replace(' ', '_'), out Rank rankDoS);
-            TRTStringToEnum(rank.Replace(' ', '_'), out TRTRank rankTRT);
-            rank = rankDoS != Rank.None ? "Security " + rank : rankTRT != TRTRank.None ? "Tactical Response " + rank.Substring(4) : rank;
 
-            showQDone = (showQDone.ToUpper() == "Y") ? "\r\n-# Quota: " + qDone + " / " + quota : "";
 
-            notes = (notes != "") ? "\r\n**Note(s): **" + notes : "";
 
-            return 
-                "**Username: **" + username + 
-                "\r\n**Rank: **" + rank + 
-                "\r\n**Start Time: **" + sTime + 
-                "\r\n**End time: **" + eTime + 
-                "\r\n**Total time on-site: **" + tOnSite + " minutes" +
-                "\r\n**Total time: **" + tTime + " minutes" + 
-                showQDone + 
-                "\r\n__**Evidence: **__" + 
-                notes;
-        }
+
+
+
+
+
+
+
+
+
 
 
 
         private void mitSetup_Click(object sender, RoutedEventArgs e)
         {
-            Setup setup = new();
+            CheckRanks(userData, out UserData udSafe, prefs.TRT);
+            Setup setup = new(udSafe, prefs.TRT, note);
             setup.ShowDialog();
-            ReloadData();
+            if (setup.DialogResult ?? false)
+            {
+                userData = setup.UData;
+                note = setup.notes;
+                ReloadData(true);
+            }
         }
 
         private void mitDarkMode_Click(object sender, RoutedEventArgs e)
         {
+            prefs.DarkMode = mitDarkMode.IsChecked;
             DarkModeChecker();
+            SavePreferences(prefs);
         }
 
         private void mitShowQuota_Click(object sender, RoutedEventArgs e)
         {
-            string sQDone = mitShowQuota.IsChecked == true ? "Y" : "N";
-            string[] data = GetAndCheck();
-            WriteData(data[0], data[1], data[2], data[3], data[4], sQDone);
+            userData.ShowQuotaDone = mitShowQuota.IsChecked;
             ReloadData();
+            SaveUserData(userData);
         }
 
         private void mitTRT_Click(object sender, RoutedEventArgs e)
         {
-            if (ReadMisc()[1] == "Y")
-            {
-                File.WriteAllText("misc", ReadMisc()[0] + "|N");
-                DepartmentChecker();
-                DarkModeChecker();
-            }
-            else
-            {
-                File.WriteAllText("misc", ReadMisc()[0] + "|Y");
-                DepartmentChecker();
-                DarkModeChecker();
-            }
+            prefs.TRT = mitTRT.IsChecked;
+            DepartmentChecker();
+            DarkModeChecker();
+            SaveUserData(userData);
+            SavePreferences(prefs);
         }
 
         private void btnGenerateLog_Click(object sender, RoutedEventArgs e)
         {
-            string[] data = GetAndCheck();
             ReloadData();
-            string sTime = numStartHour.Text.PadLeft(2, '0') + ":" + numStartMinute.Text.PadLeft(2, '0');
-            string eTime = numEndHour.Text.PadLeft(2, '0') + ":" + numEndMinute.Text.PadLeft(2, '0');
-            TimeSpan startTime = new TimeSpan(Convert.ToInt32(numStartHour.Text), Convert.ToInt32(numStartMinute.Text), 0);
-            TimeSpan endTime = new TimeSpan(Convert.ToInt32(numEndHour.Text), Convert.ToInt32(numEndMinute.Text), 0);
+            if (!int.TryParse(numStartHour.Text, out int startHour) || !int.TryParse(numStartMinute.Text, out int startMinutes) || !int.TryParse(numEndHour.Text, out int endHour) || !int.TryParse(numEndMinute.Text, out int endMinutes)) return;
+            TimeSpan startTime = new TimeSpan(startHour, startMinutes, 0);
+            TimeSpan endTime = new TimeSpan(endHour, endMinutes, 0);
             if (endTime < startTime)
             {
                 endTime = endTime.Add(TimeSpan.FromDays(1));
             }
             int difference = (int)(endTime - startTime).TotalMinutes;
-            string tTime = (Convert.ToInt32(data[3]) + difference).ToString();
-            string qDone = (Convert.ToInt32(data[2]) + difference).ToString();
-            File.Delete("log.tmp");
-            File.WriteAllText("log.tmp", tTime + "\n" + qDone);
-            File.SetAttributes("log.tmp", FileAttributes.Hidden);
-            txtLog.Text = GenerateLog(data[0], data[1], sTime, eTime, qDone, difference.ToString(), tTime, data[4], data[5], txtNote.Text);
+            int tTime = userData.TotalTime + difference;
+            int qDone = userData.QuotaDone + difference;
+            log_qDone = qDone;
+            log_tTime = tTime;
+            txtLog.Text = GenerateLog(userData, startTime.ToString(@"hh\:mm"), endTime.ToString(@"hh\:mm"), difference, txtNote.Text, format);
             grdLogGrid.Visibility = Visibility.Visible;
         }
 
         private void InputNumCheck(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = !int.TryParse(e.Text, out _);
+            e.Handled = !int.TryParse(e.Text, out _) && e.Text != "";
             if (!e.Handled && sender is TextBox tBox && tBox.GetLineLength(0) >= 2)
             {
                 switch (tBox.Name)
@@ -491,7 +514,8 @@ namespace SALG__Application_
             {
                 if (e.Key == Key.Left)
                 {
-                    if (tBox.CaretIndex > 0) { tBox.CaretIndex -= 1; return; }
+                    if (tBox.CaretIndex > 0) return;
+                    e.Handled = true;
                     switch (tBox.Name)
                     {
                         case "numStartMinute":
@@ -507,7 +531,8 @@ namespace SALG__Application_
                 }
                 else if (e.Key == Key.Right)
                 {
-                    if (tBox.CaretIndex < tBox.GetLineLength(0)) { tBox.CaretIndex += 1; return; }
+                    if (tBox.CaretIndex < tBox.GetLineLength(0)) return;
+                    e.Handled = true;
                     switch (tBox.Name)
                     {
                         case "numStartHour":
@@ -521,29 +546,16 @@ namespace SALG__Application_
                             break;
                     }
                 }
-                else if (e.Key == Key.Back && tBox.CaretIndex > 0 && tBox.Text.Length > 0)
-                {
-                    tBox.Text = tBox.Text.Remove(tBox.CaretIndex - 1, 1);
-                    tBox.CaretIndex -= tBox.CaretIndex - 1;
-                    e.Handled = true;
-                }
             }
         }
 
         private void PasteNumCheck(object sender, ExecutedRoutedEventArgs e)
         {
-            if (e.Command == ApplicationCommands.Paste && !int.TryParse(Clipboard.GetText(), out _) || Clipboard.GetText().Length > 2)
-            {
-                e.Handled = true;
-            }
+            e.Handled = e.Command == ApplicationCommands.Paste && !int.TryParse(Clipboard.GetText(), out _);
         }
 
         private async void btnCopyLog_Click(object sender, RoutedEventArgs e)
         {
-            /* syntax:
-                    logData[0] = Total Time
-                    logData[1] = Quota Done
-             */
             bool copied = false;
             for (int i = 0; i < 3 && !copied; i++)
             {
@@ -558,32 +570,38 @@ namespace SALG__Application_
                 }
             }
             btnCopyLog.Content = "Copied!";
-            string[] data = GetAndCheck();
-            string[] logData = File.ReadAllLines("log.tmp");
-            WriteData(data[0], data[1], logData[1], logData[0], data[4], data[5]);
+            userData.TotalTime = log_tTime;
+            userData.QuotaDone = log_qDone;
             ReloadData();
             await Task.Delay(1000);
             btnCopyLog.Content = "Copy Log (Save Data)";
-            File.Delete("log.tmp");
             grdLogGrid.Visibility = Visibility.Hidden;
         }
 
         private void btnQuotaReset_Click(object sender, RoutedEventArgs e)
         {
-            string[] data = GetAndCheck();
-            WriteData(data[0], data[1], "0", data[3], data[4], data[5]);
+            userData.QuotaDone = 0;
+            SaveUserData(userData);
+            SavePreferences(prefs);
             ReloadData();
-        }
-
-        private void Window_Close(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            File.Delete("log.tmp");
         }
 
         private void mitLicense_Click(object sender, RoutedEventArgs e)
         {
-            LicWindow license = new();
-            license.ShowDialog();
+            new LicWindow().ShowDialog();
+        }
+
+        private void mitAbout_Click(object sender, RoutedEventArgs e)
+        {
+            new AboutWindow().ShowDialog();
+        }
+
+        private void mitFormat_Click(object sender, RoutedEventArgs e)
+        {
+            Format f = new(format);
+            f.ShowDialog();
+            if (f.DialogResult ?? false)
+                format = f.format;
         }
     }
 }
