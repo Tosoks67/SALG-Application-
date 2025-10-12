@@ -6,12 +6,11 @@
         xmlns:local="clr-namespace:SALG__Application_"
         mc:Ignorable="d"
         Title="Security Activity Log Generator (SALG)"
-        Height="450"
-        Width="800"
+        Height="500"
+        Width="1000"
         Icon="DoS_dark.ico"
         MinWidth="800"
-        MinHeight="450"
-        Closing="Window_Close">
+        MinHeight="450">
     <Window.Resources>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="Black"/>
@@ -51,8 +50,9 @@
         </Image>
         <Grid>
             <Menu Background="#00000000">
-                <MenuItem Header="Setup">
+                <MenuItem Header="Edit">
                     <MenuItem x:Name="mitSetup" Style="{StaticResource MItemChild}" Header="Run Setup again" Click="mitSetup_Click"/>
+                    <MenuItem x:Name="mitFormat" Style="{StaticResource MItemChild}" Header="Change the Format" Click="mitFormat_Click"/>
                 </MenuItem>
                 <MenuItem Header="Options">
                     <MenuItem x:Name="mitShowQuota" Style="{StaticResource MItemChild}" Header="Show Quota" IsCheckable="True" IsChecked="True" Click="mitShowQuota_Click"/>
@@ -60,10 +60,11 @@
                     <MenuItem x:Name="mitTRT" Style="{StaticResource MItemChild}" Header="Tactical Response Team" IsCheckable="True" Click="mitTRT_Click"/>
                 </MenuItem>
                 <MenuItem Header="Help">
+                    <MenuItem x:Name="mitAbout" Style="{StaticResource MItemChild}" Header="About" Click="mitAbout_Click"/>
                     <MenuItem x:Name="mitLicense" Style="{StaticResource MItemChild}" Header="License" Click="mitLicense_Click"/>
                 </MenuItem>
             </Menu>
-            <Grid Width="300" Height="150" VerticalAlignment="Top" HorizontalAlignment="Left">
+            <Grid Width="350" Height="150" VerticalAlignment="Top" HorizontalAlignment="Left">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
