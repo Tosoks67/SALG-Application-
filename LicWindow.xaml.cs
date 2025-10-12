@@ -25,7 +25,7 @@ namespace SALG__Application_
         {
             InitializeComponent();
             var assembly = Assembly.GetExecutingAssembly();
-            using Stream stream = assembly.GetManifestResourceStream("SALG__Application_.LICENSE.txt");
+            using Stream? stream = assembly.GetManifestResourceStream("SALG__Application_.LICENSE.txt");
             if (stream != null)
             {
                 using StreamReader reader = new(stream);
