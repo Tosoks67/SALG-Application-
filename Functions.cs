@@ -1,120 +1,81 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Navigation;
+using static SALG__Application_.FilePaths;
+using static SALG__Application_.Defaults;
 
 namespace SALG__Application_
 {
     internal static class Functions
     {
-        public static bool RankStringToEnum(string value, out Rank result, Rank fallback = Rank.None)
+        /// <summary>
+        /// Checks ranks. Returns true if at least one rank is set, false if both are None (also sets a default rank in that case).
+        /// </summary>
+        public static bool CheckRanks(UserData data, out UserData udOut, bool TRT = false)
         {
-            if (Enum.TryParse(value, true, out Rank directRank))
-            {
-                result = directRank;
-                return true;
-            }
-
-            if (Enum.TryParse(value, true, out RankShort shortRank))
-            {
-                result = (Rank)(int)shortRank;
-                return true;
-            }
-
-            result = fallback;
+            udOut = data;
+            if (data.Rank != Rank.None || data.TRTRank != TRTRank.None) return true;
+            udOut.RankString = TRT ? TRTRank.TRT_Cadet.ToString() : Rank.Cadet.ToString();
             return false;
         }
 
-        public static bool TRTStringToEnum(string value, out TRTRank result, TRTRank fallback = TRTRank.None)
+        /// <summary>
+        /// Logs a message to log.txt in the application folder (includes a timestamp at the beginning)
+        /// Will be included as a debugging option in future releases
+        /// </summary>
+        public static void Log(string message)
         {
-            if (Enum.TryParse(value, true, out TRTRank directRank))
-            {
-                result = directRank;
-                return true;
-            }
-
-            if (Enum.TryParse(value, true, out TRTRankShort shortRank))
-            {
-                result = (TRTRank)(int)shortRank;
-                return true;
-            }
-
-            result = fallback;
-            return false;
+            string path = Path.Combine(AppFolder, "log.txt");
+            string msg = "\n" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ": " + message;
+            File.WriteAllText(path, File.ReadAllText(path) + msg);
         }
 
-        public static bool CheckUp(string[] data)
+        /// <summary>
+        /// Generate a log string based on the provided data
+        /// See Format.xaml for an explanation regarding the custom format system
+        /// </summary>
+        public static string GenerateLog(UserData data, string sTime, string eTime, int tOnSite, string notes = "", string format = DefaultFormat)
         {
-            /* syntax:
-                    data[0] = Username
-                    data[1] = Rank
-                    data[2] = Quota Done
-                    data[3] = Total Time
-                    data[4] = Quota
-                    data[5] = Show Quota Done */
-            RankStringToEnum(data[1].Replace(' ', '_'), out Rank rank);
-            TRTStringToEnum(data[1].Replace(' ', '_'), out TRTRank TRTRank);
-            if (data.Length != 6 || (rank == Rank.None && TRTRank == TRTRank.None) || !int.TryParse(data[2], out int _) || !int.TryParse(data[3], out int _) || !int.TryParse(data[4], out int _) || (data[5].ToUpper() != "Y" && data[5].ToUpper() != "N"))
+            string rankString =
+                data.Rank != Rank.None && data.Rank != Rank.Assistant_Director_of_Security ? "Security " + data.Rank.ToString().Replace('_', ' ') :
+                data.TRTRank != TRTRank.None ? "Tactical Response " + data.TRTRank.ToString().Substring(4).Replace('_', ' ') :
+                data.RankString.Replace('_', ' ');
+            List<string> formatList = new(format.Split('\n'));
+            for (int i = formatList.Count - 1; i >= 0; i--)
             {
-                File.Delete("data");
-                return false;
+                if (formatList[i].Length < 4) continue;
+                if ((formatList[i][..4] == "$(q)"))
+                {
+                    if (!data.ShowQuotaDone)
+                    {
+                        formatList.RemoveAt(i);
+                        continue;
+                    }
+                    else
+                        formatList[i] = formatList[i][4..];
+                }
+                if (formatList[i][..4] == "$(n)")
+                {
+                    if (string.IsNullOrWhiteSpace(notes))
+                    {
+                        formatList.RemoveAt(i);
+                        continue;
+                    }
+                    else
+                        formatList[i] = formatList[i][4..];
+                }
             }
-            return true;
-        }
-
-        public static bool CheckMisc(string[] misc)
-        {
-            /* syntax:
-                    misc[0] = Dark Mode
-                    misc[1] = TRT */
-            if (misc.Length != 2 || misc[0].ToUpper() != "Y" && misc[0].ToUpper() != "N" || misc[1].ToUpper() != "Y" && misc[1].ToUpper() != "N")
-            {
-                File.Delete("misc");
-                return false;
-            }
-            return true;
-        }
-
-        public static string[] ReadData()
-        {
-            if (!File.Exists("data"))
-            {
-                return ["", "", "", "", "", ""];
-            }
-            string full = File.ReadAllText("data");
-            string[] data = full.Split('|');
-            return data;
-        }
-
-        public static string[] ReadMisc()
-        {
-            if (!File.Exists("misc"))
-            {
-                return ["", ""];
-            }
-            string full = File.ReadAllText("misc");
-            string[] data = full.Split('|');
-            return data;
-        }
-
-        public static void WriteData(string username, string currentRank, string quotaDone, string totalTimeServed, string requiredQuota, string showQuotaDone)
-        {
-            username = username == "" ? "John Doe" : username;
-            currentRank = currentRank == "" ? "Cadet" : currentRank;
-            quotaDone = quotaDone == "" ? "0" : quotaDone;
-            totalTimeServed = totalTimeServed == "" ? "0" : totalTimeServed;
-            requiredQuota = requiredQuota == "" ? "120" : requiredQuota;
-            showQuotaDone = showQuotaDone == "" ? "Y" : showQuotaDone;
-            File.WriteAllText("data", username + "|" + currentRank + "|" + quotaDone + "|" + totalTimeServed + "|" + requiredQuota + "|" + showQuotaDone);
-        }
-
-        public static string[] GetAndCheck()
-        {
-            if (!CheckUp(ReadData()))
-            {
-                Setup setup = new();
-                setup.ShowDialog();
-            }
-            return ReadData();
+            format = string.Join('\n', formatList);
+            return format
+                .Replace("$(username)", data.Username)
+                .Replace("$(rank)", rankString)
+                .Replace("$(start_time)", sTime)
+                .Replace("$(end_time)", eTime)
+                .Replace("$(time_on_site)", tOnSite.ToString())
+                .Replace("$(total_time)", (data.TotalTime + tOnSite).ToString())
+                .Replace("$(quota_done)", (data.QuotaDone + tOnSite).ToString())
+                .Replace("$(current_quota)", data.CurrentQuota.ToString())
+                .Replace("$(notes)", notes);
         }
     }
 }
