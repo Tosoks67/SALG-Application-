@@ -1,10 +1,12 @@
 # Security Activity Log Generator (SALG for short)
-is a tool for all my fellow **DoS officers** which includes the following:
+is a tool for all my fellow **DoS officers and TRT operatives** which includes the following:
   - Quota and Total Time management,
   - Total Time on-site calculator, ***(You still have to add that 1 hour if affected by DS)***
   - Permament Notes, *(Notes that appear every time you make a log)*
   - Activity Log Generator, *(Kind of the main thing)*
   - Quota Hiding
+  - TRT ranks
+  - Customizable format
 
 # Usage
 
@@ -21,13 +23,14 @@ Upon the first launch of the application *(Or if it has been fired from the Main
   5. The Current Quota
   6. Permament Note
 
-*After that, an extensionless file called "data" and "notes" **(If Permament Note was specified)** will be created.*
+*After that, there will be a folder called "SALG" created in your %appdata% directory which will contain:*
+  - data.json - **data** in previous releases
+  - prefs.json - **misc** in previous releases
+  - notes.txt - **notes** in previous releases
 
-*These files store your data. Do NOT delete them **(Unless you wish to delete all of your data that is)***
+*These files store your data. Run the "Remove Data.bat" included in every release if you wish to delete your data.*
 
-*There's also a file called "misc" that will be created. It stores your preferences **(Dark Mode, TRT ranks)***
-
-### SALG (Application) and the console version of it use the same data format *(meaning that you can use "data" and "notes" for both versions)*
+### SALG (Application) will automatically load the data files from the [console version](https://github.com/Tosoks67/SALG) if you run it in the same directory as them
 
 
 
@@ -40,14 +43,42 @@ In here, you can:
  
 ### On the Menu
   - Run Setup again
+  - Change the Format
   - Toggle whether you want your Quota Done shown
   - Toggle Dark Mode
-  - Toggle TRT ranks ***(I only added the ranks, as I don't know how your logs look, sorry; Might add customizable logs in the future; Will trigger Setup again)***
+  - Toggle TRT ranks ***(Will trigger Setup again)***
+  - Open the About window
   - View the License
 
 ### On the main UI
   - Generate a log
   - Reset your `Quota Done`
+
+
+
+## Changing the Activity Log Format
+![Format Editor Window](img/format.png)
+
+As you might've guessed, in here you can change the format of your logs.
+The `$()` values get replaced by their coresponding data
+
+The `$(q)` marker goes at the start of a line you want to be togglable using the **Show Quota** feature *(It basically just removes the line(s) if **Show Quota** is unchecked)*
+
+The `$(n)` marker goes at the start of a line you want to contain notes *(What this does is remove the marked line(s) if the **Note** field is empty)*
+
+### Full list of all the markers:
+- $(username) - Username
+- $(rank) - Rank *(Includes a `Security ` prefix for DoS and `Tactical Response ` for TRT)*
+- $(start_time) - Start Time
+- $(end_time) - End Time
+- $(time_on_site) - Total Time on-site
+- $(total_time) - Total Time
+- $(quota_done) - Quota Done
+- $(current_quota) - Current Quota
+- $(notes) - Notes
+- 
+- $(q) - Explained earlier
+- $(n) - Explained earlier
 
 
 
@@ -62,10 +93,9 @@ You just need to fill the start and end hour and minute. ***(You can use arrows 
 
 After that, the app does the rest ***(And you can finally paste that log onto the discord)***.
 
-
-The `-# Quota: Quota Done / Current Quota` part will be removed if your `Show Quota` is off.
-
 *(I highly recommend to keep `Show Quota` checked to save HR some time **[Unless you're NCO+ that is]**)*
+
+### Your data gets rewritten only after you click the *Copy Log* button
 
 
 
