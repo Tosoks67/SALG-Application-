@@ -2,15 +2,13 @@
 is a tool for all my fellow **DoS officers and TRT operatives** which includes the following:
   - Quota and Total Time management,
   - Total Time on-site calculator, ***(You still have to add that 1 hour if affected by DS)***
-  - Permament Notes, *(Notes that appear every time you make a log)*
+  - Permanent Notes, *(Notes that appear every time you make a log)*
   - Activity Log Generator, *(Kind of the main thing)*
   - Quota Hiding
-  - TRT ranks
-  - Customizable format
+  - The entirety of DoS *(And TRT)* and MTF ranks
+  - Customizable format and prefixes
 
 # Usage
-
-### SALG (Application) has multiple files, so you pretty much have to store it inside a folder.
 
 ## Setup
 ![Setup Process](img/setup.png)
@@ -21,16 +19,17 @@ Upon the first launch of the application *(Or if it has been fired from the Main
   3. Minutes of the Quota done,
   4. Your Total Time,
   5. The Current Quota
-  6. Permament Note
+  6. Permanent Note
 
-*After that, there will be a folder called "SALG" created in your %appdata% directory which will contain:*
+*After that, there will be a folder called "SALG" created in your `%appdata%` directory which will contain:*
   - data.json - **data** in previous releases
   - prefs.json - **misc** in previous releases
   - notes.txt - **notes** in previous releases
+  - backup folder - self-explanatory, stores your backups
 
 *These files store your data. Run the "Remove Data.bat" included in every release if you wish to delete your data.*
 
-### SALG (Application) will automatically load the data files from the [console version](https://github.com/Tosoks67/SALG) if you run it in the same directory as them
+### SALG (Application) will automatically load the data files from the [console version](https://github.com/Tosoks67/SALG) if you run it in the same directory as it
 
 
 
@@ -46,7 +45,7 @@ In here, you can:
   - Change the Format
   - Toggle whether you want your Quota Done shown
   - Toggle Dark Mode
-  - Toggle TRT ranks ***(Will trigger Setup again)***
+  - Choose (sub)department ranks ***(Will trigger Setup again)***
   - Open the About window
   - View the License
 
@@ -68,7 +67,7 @@ The `$(n)` marker goes at the start of a line you want to contain notes *(What t
 
 ### Full list of all the markers:
 - $(username) - Username
-- $(rank) - Rank *(Includes a `Security ` prefix for DoS and `Tactical Response ` for TRT)*
+- $(rank) - Rank *(Includes the prefix customizable below)*
 - $(start_time) - Start Time
 - $(end_time) - End Time
 - $(time_on_site) - Total Time on-site
@@ -87,13 +86,13 @@ The `$(n)` marker goes at the start of a line you want to contain notes *(What t
 
 The process itself is quite simple.
 
-The space labelled `Note: ` will always be autofilled with your Permament Note. You can modify it however you want.
+The space labelled `Note: ` will always be autofilled with your Permanent Note. You can modify it however you want.
 
-You just need to fill the start and end hour and minute. ***(You can use arrows to move between the input boxes; 2 characters maximum for each box)***
+You just need to fill the start and end hour and minute. ***(You can use arrows to move between the input boxes; 2 numbers maximum for each box)***
 
-After that, the app does the rest ***(And you can finally paste that log onto the discord)***.
+After that, the app does the rest ***(And you can finally paste that log onto the discord server)***.
 
-*(I highly recommend to keep `Show Quota` checked to save HR some time **[Unless you're NCO+ that is]**)*
+*(I highly recommend to keep `Show Quota` checked to save HR some time)*
 
 ### Your data gets rewritten only after you click the *Copy Log* button
 
