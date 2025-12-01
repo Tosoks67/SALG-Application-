@@ -1,607 +1,642 @@
-﻿using System.IO;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using static SALG__Application_.Defaults;
 using static SALG__Application_.FilePaths;
 using static SALG__Application_.Functions;
 using static SALG__Application_.SaveHandler;
-using static SALG__Application_.Defaults;
 
-namespace SALG__Application_
+namespace SALG__Application_;
+
+/// <summary>
+/// Interaction logic for MainWindow.xaml
+/// </summary>
+public partial class MainWindow
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    private static readonly FrameworkElementFactory BtnFefLight = new(typeof(Border)) { Name = "border" };
+    private static readonly FrameworkElementFactory BtnFefDark = new(typeof(Border)) { Name = "border" };
+    private static readonly FrameworkElementFactory ContentPresenterLight = new(typeof(ContentPresenter));
+    private static readonly FrameworkElementFactory ContentPresenterDark = new(typeof(ContentPresenter));
+    private static readonly Storyboard ToWhiteBg = new() { Children = { new ColorAnimation { To = Color.FromRgb(255, 255, 255), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
+    private static readonly Storyboard ToWhiteFg = ToWhiteBg.Clone();
+    private static readonly Storyboard ToGray = new() { Children = { new ColorAnimation { To = Color.FromRgb(120, 120, 120), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
+    private static readonly Storyboard ToBlackBg = new() { Children = { new ColorAnimation { To = Color.FromRgb(0, 0, 0), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
+    private static readonly Storyboard ToBlackFg = ToBlackBg.Clone();
+    private static Style _darkButtonStyle = new(typeof(Button));
+    private static Style _lightButtonStyle = new(typeof(Button));
+
+    private Prefs _prefs = LoadPreferences();
+    private UserData _userData = LoadUserData();
+    private string _format = File.Exists(FormatPath) ? File.ReadAllText(FormatPath) : DefaultFormat;
+    private string _note = LoadNotes();
+
+    private bool _isDarkMode;
+    private Department _loadedDep = Department.DoS;
+
+    private int _logQDone;
+    private int _logTTime;
+    public MainWindow()
     {
-        private FrameworkElementFactory btnFEFLight = new(typeof(Border)) { Name = "border" };
-        private FrameworkElementFactory btnFEFDark = new(typeof(Border)) { Name = "border" };
-        private FrameworkElementFactory contentPresenterLight = new(typeof(ContentPresenter));
-        private FrameworkElementFactory contentPresenterDark = new(typeof(ContentPresenter));
-        private Storyboard backgroundToWhite = new() { Children = { new ColorAnimation { To = Color.FromRgb(255, 255, 255), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
-        private Storyboard foregroundToWhite = new() { Children = { new ColorAnimation { To = Color.FromRgb(255, 255, 255), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
-        private Storyboard backgroundToGray = new() { Children = { new ColorAnimation { To = Color.FromRgb(120, 120, 120), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
-        private Storyboard backgroundToBlack = new() { Children = { new ColorAnimation { To = Color.FromRgb(0, 0, 0), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
-        private Storyboard foregroundToBlack = new() { Children = { new ColorAnimation { To = Color.FromRgb(0, 0, 0), Duration = new Duration(TimeSpan.FromSeconds(0.2)) } } };
-        private Style darkButtonStyle = new(typeof(Button));
-        private Style lightButtonStyle = new(typeof(Button));
-
-        private Prefs prefs = LoadPreferences();
-        private UserData userData = LoadUserData();
-        private string format = File.Exists(FormatPath) ? File.ReadAllText(FormatPath) : DefaultFormat;
-        private string note = LoadNotes();
-
-        private bool isDarkMode = false;
-        private bool isTRT = false;
-
-        private int log_qDone = 0;
-        private int log_tTime = 0;
-        public MainWindow()
+        Directory.CreateDirectory(AppFolder);
+        StyleSetup();
+        InitializeComponent();
+        mitDarkMode.IsChecked = _prefs.DarkMode;
+        if (!CheckRanks(_userData, out var udSafe, _prefs.Department))
         {
-            Directory.CreateDirectory(AppFolder);
-            StyleSetup();
-            InitializeComponent();
-            mitDarkMode.IsChecked = prefs.DarkMode;
-            if (!CheckRanks(userData, out UserData udSafe, prefs.TRT))
-            {
-                Setup setup = new(udSafe, prefs.TRT, note);
-                setup.ShowDialog();
-                if (setup.DialogResult ?? false)
-                {
-                    userData = setup.UData;
-                    note = setup.notes;
-                    ReloadData(true);
-                }
-            }
-            else
-            {
-                ReloadData(true);
-            }
-            DepartmentChecker();
-            DarkModeChecker();
-        }
-
-        /// <summary>
-        /// Setup styles to later use in DarkModeChecker()
-        /// </summary>
-        private void StyleSetup()
-        {
-            btnFEFLight.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            btnFEFLight.SetBinding(Border.PaddingProperty, new Binding("Padding") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            btnFEFLight.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
-            btnFEFLight.SetValue(Border.BorderThicknessProperty, new Thickness(0.5));
-            btnFEFLight.SetValue(Border.BorderBrushProperty, Brushes.Black);
-            contentPresenterLight.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            contentPresenterLight.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-            btnFEFLight.AppendChild(contentPresenterLight);
-
-            btnFEFDark.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            btnFEFDark.SetBinding(Border.PaddingProperty, new Binding("Padding") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
-            btnFEFDark.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
-            btnFEFDark.SetValue(Border.BorderThicknessProperty, new Thickness(0.5));
-            btnFEFDark.SetValue(Border.BorderBrushProperty, Brushes.White);
-            contentPresenterDark.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-            contentPresenterDark.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-            btnFEFDark.AppendChild(contentPresenterDark);
-
-            Storyboard.SetTargetProperty(backgroundToWhite.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
-            Storyboard.SetTargetProperty(foregroundToWhite.Children[0], new PropertyPath("(Foreground).(SolidColorBrush.Color)"));
-            Storyboard.SetTargetProperty(backgroundToGray.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
-            Storyboard.SetTargetProperty(backgroundToBlack.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
-            Storyboard.SetTargetProperty(foregroundToBlack.Children[0], new PropertyPath("(Foreground).(SolidColorBrush.Color)"));
-            darkButtonStyle = new(typeof(Button))
-            {
-                Setters =
-                    {
-                        new Setter(Button.ForegroundProperty, new SolidColorBrush(Colors.White)),
-                        new Setter(Button.BackgroundProperty, new SolidColorBrush(Colors.Black)),
-                        new Setter(Button.TemplateProperty, new ControlTemplate(typeof(Button))
-                        {
-                            Triggers =
-                            {
-                                new Trigger
-                                {
-                                    Property = Button.IsPressedProperty,
-                                    Value = true,
-                                    EnterActions =
-                                    {
-                                        new BeginStoryboard
-                                        {
-                                            Storyboard = backgroundToGray
-                                        }
-                                    },
-                                    ExitActions =
-                                    {
-                                        new BeginStoryboard
-                                        {
-                                            Storyboard = backgroundToBlack
-                                        }
-                                    }
-                                },
-                                new MultiTrigger
-                                {
-                                    Conditions =
-                                    {
-                                        new Condition
-                                        {
-                                            Property = Button.IsMouseOverProperty,
-                                            Value = true
-                                        },
-                                        new Condition
-                                        {
-                                            Property = Button.IsPressedProperty,
-                                            Value = false
-                                        }
-                                    },
-                                    EnterActions =
-                                    {
-                                        new BeginStoryboard
-                                        {
-                                            Storyboard = backgroundToWhite
-                                        }
-                                    },
-                                    ExitActions =
-                                    {
-                                        new BeginStoryboard
-                                        {
-                                            Storyboard = backgroundToBlack
-                                        }
-                                    }
-                                }
-                            },
-                            VisualTree = btnFEFDark
-                        })
-                    },
-                Triggers =
-                    {
-                        new MultiTrigger
-                        {
-                            Conditions =
-                            {
-                                new Condition
-                                {
-                                    Property = Button.IsMouseOverProperty,
-                                    Value = true
-                                },
-                                new Condition
-                                {
-                                    Property = Button.IsPressedProperty,
-                                    Value = false
-                                }
-                            },
-                            EnterActions =
-                            {
-                                new BeginStoryboard
-                                {
-                                    Storyboard = foregroundToBlack
-                                }
-                            },
-                            ExitActions =
-                            {
-                                new BeginStoryboard
-                                {
-                                    Storyboard = foregroundToWhite
-                                }
-                            }
-                        }
-                    }
-            };
-            lightButtonStyle = new(typeof(Button))
-            {
-                Setters =
-                    {
-                        new Setter(Button.ForegroundProperty, new SolidColorBrush(Colors.Black)),
-                        new Setter(Button.BackgroundProperty, new SolidColorBrush(Colors.White)),
-                        new Setter(Button.TemplateProperty, new ControlTemplate(typeof(Button))
-                        {
-                            Triggers =
-                            {
-                                new Trigger
-                                {
-                                    Property = Button.IsPressedProperty,
-                                    Value = true,
-                                    EnterActions =
-                                    {
-                                        new BeginStoryboard
-                                        {
-                                            Storyboard = backgroundToBlack
-                                        }
-                                    },
-                                    ExitActions =
-                                    {
-                                        new BeginStoryboard
-                                        {
-                                            Storyboard = backgroundToWhite
-                                        }
-                                    }
-                                },
-                                new MultiTrigger
-                                {
-                                    Conditions =
-                                    {
-                                        new Condition
-                                        {
-                                            Property = Button.IsMouseOverProperty,
-                                            Value = true
-                                        },
-                                        new Condition
-                                        {
-                                            Property = Button.IsPressedProperty,
-                                            Value = false
-                                        }
-                                    },
-                                    EnterActions =
-                                    {
-                                        new BeginStoryboard
-                                        {
-                                            Storyboard = backgroundToGray
-                                        }
-                                    },
-                                    ExitActions =
-                                    {
-                                        new BeginStoryboard
-                                        {
-                                            Storyboard = backgroundToWhite
-                                        }
-                                    }
-                                }
-                            },
-                            VisualTree = btnFEFLight
-                        })
-                    },
-                Triggers =
-                    {
-                        new MultiTrigger
-                        {
-                            Conditions =
-                            {
-                                new Condition
-                                {
-                                    Property = Button.IsMouseOverProperty,
-                                    Value = true
-                                },
-                                new Condition
-                                {
-                                    Property = Button.IsPressedProperty,
-                                    Value = false
-                                }
-                            },
-                            EnterActions =
-                            {
-                                new BeginStoryboard
-                                {
-                                    Storyboard = foregroundToWhite
-                                }
-                            },
-                            ExitActions =
-                            {
-                                new BeginStoryboard
-                                {
-                                    Storyboard = foregroundToBlack
-                                }
-                            }
-                        }
-                    }
-            };
-        }
-
-        private void DepartmentChecker()
-        {
-            mitTRT.IsChecked = prefs.TRT;
-            if ((prefs.TRT && userData.TRTRank == TRTRank.None) || (!prefs.TRT && userData.Rank == Rank.None))
-            {
-                CheckRanks(userData, out UserData udSafe, prefs.TRT);
-                Setup setup = new(udSafe, prefs.TRT, note);
-                setup.ShowDialog();
-                if (setup.DialogResult ?? false)
-                {
-                    userData = setup.UData;
-                    note = setup.notes;
-                    ReloadData(true);
-                } else
-                {
-                    prefs.TRT = isTRT;
-                    mitTRT.IsChecked = prefs.TRT;
-                }
-            }
-            isTRT = prefs.TRT;
-        }
-
-        /// <summary>
-        /// Check if Dark Mode is enabled and change styles accordingly
-        /// </summary>
-        private void DarkModeChecker()
-        {
-            string imgSource = prefs.TRT ? "TRT" : "DoS";
-            imgSource = prefs.DarkMode ? imgSource + "_dark.png" : imgSource + ".png";
-
-            IconFor.Source = new BitmapImage(new Uri("/" + imgSource, UriKind.Relative));
-            IconBack.Source = new BitmapImage(new Uri("/" + imgSource, UriKind.Relative));
-
-            mitDarkMode.IsChecked = prefs.DarkMode;
-            isDarkMode = prefs.DarkMode;
-
-            if (mitDarkMode.IsChecked)
-            {
-                gstStart.Color = Color.FromRgb(255, 255, 255);
-                gstStop.Color = Color.FromRgb(0, 0, 0);
-                this.Resources[typeof(Label)] = new Style(typeof(Label))
-                {
-                    Setters =
-                    {
-                        new Setter(Label.ForegroundProperty, Brushes.White)
-                    }
-                };
-                this.Resources[typeof(MenuItem)] = new Style(typeof(MenuItem))
-                {
-                    Setters =
-                    {
-                        new Setter(MenuItem.ForegroundProperty, Brushes.White)
-                    }
-                };
-                this.Resources[typeof(TextBox)] = new Style(typeof(TextBox))
-                {
-                    Setters =
-                    {
-                        new Setter(TextBox.ForegroundProperty, Brushes.White),
-                        new Setter(TextBox.BackgroundProperty, Brushes.Black),
-                        new Setter(TextBox.OpacityProperty, 0.5)
-                    }
-                };
-                this.Resources[typeof(Button)] = darkButtonStyle;
-            }
-            else
-            {
-                gstStart.Color = Color.FromRgb(84, 84, 84);
-                gstStop.Color = Color.FromRgb(255, 255, 255);
-                this.Resources[typeof(Label)] = new Style(typeof(Label))
-                {
-                    Setters =
-                    {
-                        new Setter(Label.ForegroundProperty, Brushes.Black)
-                    }
-                };
-                this.Resources[typeof(MenuItem)] = new Style(typeof(MenuItem))
-                {
-                    Setters =
-                    {
-                        new Setter(MenuItem.ForegroundProperty, Brushes.Black)
-                    }
-                };
-                this.Resources[typeof(TextBox)] = new Style(typeof(TextBox))
-                {
-                    Setters =
-                    {
-                        new Setter(TextBox.ForegroundProperty, Brushes.Black),
-                        new Setter(TextBox.BackgroundProperty, Brushes.White),
-                        new Setter(TextBox.OpacityProperty, 0.5)
-                    }
-                };
-                this.Resources[typeof(Button)] = lightButtonStyle;
-            }
-        }
-
-        /// <summary>
-        /// Reload all data, optionally the note and additionally check dark mode and department
-        /// </summary>
-        private void ReloadData(bool resetNote = false)
-        {
-            txtUsername.Content = userData.Username;
-            txtCurrentRank.Content = prefs.TRT ? userData.TRTRank.ToString().Replace('_', ' ').Substring(4) : userData.Rank.ToString().Replace('_', ' ');
-            numQuotaDone.Content = userData.QuotaDone + " / " + userData.CurrentQuota + " minutes";
-            numTotalTime.Content = userData.TotalTime + " minute(s)";
-            if (resetNote) txtNote.Text = note;
-            mitShowQuota.IsChecked = userData.ShowQuotaDone;
-
-            mitTRT.IsChecked = prefs.TRT;
-            mitDarkMode.IsChecked = prefs.DarkMode;
-
-            if (isDarkMode != prefs.DarkMode)
-                DarkModeChecker();
-            if (isTRT != prefs.TRT)
-                DepartmentChecker();
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        private void mitSetup_Click(object sender, RoutedEventArgs e)
-        {
-            CheckRanks(userData, out UserData udSafe, prefs.TRT);
-            Setup setup = new(udSafe, prefs.TRT, note);
+            Setup setup = new(udSafe, _prefs.Department, _note);
             setup.ShowDialog();
             if (setup.DialogResult ?? false)
             {
-                userData = setup.UData;
-                note = setup.notes;
+                _userData = setup.UData;
+                _note = setup.Notes;
                 ReloadData(true);
             }
         }
-
-        private void mitDarkMode_Click(object sender, RoutedEventArgs e)
+        else
         {
-            prefs.DarkMode = mitDarkMode.IsChecked;
-            DarkModeChecker();
-            SavePreferences(prefs);
+            ReloadData(true);
         }
+        DepartmentChecker();
+        DarkModeChecker();
+    }
 
-        private void mitShowQuota_Click(object sender, RoutedEventArgs e)
-        {
-            userData.ShowQuotaDone = mitShowQuota.IsChecked;
-            ReloadData();
-            SaveUserData(userData);
-        }
+    /// <summary>
+    /// Setup styles to later use in DarkModeChecker()
+    /// </summary>
+    private static void StyleSetup()
+    {
+        BtnFefLight.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+        BtnFefLight.SetBinding(Border.PaddingProperty, new Binding("Padding") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+        BtnFefLight.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
+        BtnFefLight.SetValue(Border.BorderThicknessProperty, new Thickness(0.5));
+        BtnFefLight.SetValue(Border.BorderBrushProperty, Brushes.Black);
+        ContentPresenterLight.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+        ContentPresenterLight.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+        BtnFefLight.AppendChild(ContentPresenterLight);
 
-        private void mitTRT_Click(object sender, RoutedEventArgs e)
-        {
-            prefs.TRT = mitTRT.IsChecked;
-            DepartmentChecker();
-            DarkModeChecker();
-            SaveUserData(userData);
-            SavePreferences(prefs);
-        }
+        BtnFefDark.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+        BtnFefDark.SetBinding(Border.PaddingProperty, new Binding("Padding") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
+        BtnFefDark.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
+        BtnFefDark.SetValue(Border.BorderThicknessProperty, new Thickness(0.5));
+        BtnFefDark.SetValue(Border.BorderBrushProperty, Brushes.White);
+        ContentPresenterDark.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+        ContentPresenterDark.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+        BtnFefDark.AppendChild(ContentPresenterDark);
 
-        private void btnGenerateLog_Click(object sender, RoutedEventArgs e)
+        Storyboard.SetTargetProperty(ToWhiteBg.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
+        Storyboard.SetTargetProperty(ToWhiteFg.Children[0], new PropertyPath("(Foreground).(SolidColorBrush.Color)"));
+        Storyboard.SetTargetProperty(ToGray.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
+        Storyboard.SetTargetProperty(ToBlackBg.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
+        Storyboard.SetTargetProperty(ToBlackFg.Children[0], new PropertyPath("(Foreground).(SolidColorBrush.Color)"));
+        _darkButtonStyle = new(typeof(Button))
         {
-            ReloadData();
-            if (!int.TryParse(numStartHour.Text, out int startHour) || !int.TryParse(numStartMinute.Text, out int startMinutes) || !int.TryParse(numEndHour.Text, out int endHour) || !int.TryParse(numEndMinute.Text, out int endMinutes)) return;
-            TimeSpan startTime = new TimeSpan(startHour, startMinutes, 0);
-            TimeSpan endTime = new TimeSpan(endHour, endMinutes, 0);
-            if (endTime < startTime)
+            Setters =
             {
-                endTime = endTime.Add(TimeSpan.FromDays(1));
+                new Setter(Button.ForegroundProperty, new SolidColorBrush(Colors.White)),
+                new Setter(Button.BackgroundProperty, new SolidColorBrush(Colors.Black)),
+                new Setter(Button.TemplateProperty, new ControlTemplate(typeof(Button))
+                {
+                    Triggers =
+                    {
+                        new Trigger
+                        {
+                            Property = Button.IsPressedProperty,
+                            Value = true,
+                            EnterActions =
+                            {
+                                new BeginStoryboard
+                                {
+                                    Storyboard = ToGray
+                                }
+                            },
+                            ExitActions =
+                            {
+                                new BeginStoryboard
+                                {
+                                    Storyboard = ToBlackBg
+                                }
+                            }
+                        },
+                        new MultiTrigger
+                        {
+                            Conditions =
+                            {
+                                new Condition
+                                {
+                                    Property = Button.IsMouseOverProperty,
+                                    Value = true
+                                },
+                                new Condition
+                                {
+                                    Property = Button.IsPressedProperty,
+                                    Value = false
+                                }
+                            },
+                            EnterActions =
+                            {
+                                new BeginStoryboard
+                                {
+                                    Storyboard = ToWhiteBg
+                                }
+                            },
+                            ExitActions =
+                            {
+                                new BeginStoryboard
+                                {
+                                    Storyboard = ToBlackBg
+                                }
+                            }
+                        }
+                    },
+                    VisualTree = BtnFefDark
+                })
+            },
+            Triggers =
+            {
+                new MultiTrigger
+                {
+                    Conditions =
+                    {
+                        new Condition
+                        {
+                            Property = Button.IsMouseOverProperty,
+                            Value = true
+                        },
+                        new Condition
+                        {
+                            Property = Button.IsPressedProperty,
+                            Value = false
+                        }
+                    },
+                    EnterActions =
+                    {
+                        new BeginStoryboard
+                        {
+                            Storyboard = ToBlackFg
+                        }
+                    },
+                    ExitActions =
+                    {
+                        new BeginStoryboard
+                        {
+                            Storyboard = ToWhiteFg
+                        }
+                    }
+                }
             }
-            int difference = (int)(endTime - startTime).TotalMinutes;
-            int tTime = userData.TotalTime + difference;
-            int qDone = userData.QuotaDone + difference;
-            log_qDone = qDone;
-            log_tTime = tTime;
-            txtLog.Text = GenerateLog(userData, startTime.ToString(@"hh\:mm"), endTime.ToString(@"hh\:mm"), difference, txtNote.Text, format);
-            grdLogGrid.Visibility = Visibility.Visible;
-        }
-
-        private void InputNumCheck(object sender, TextCompositionEventArgs e)
+        };
+        _lightButtonStyle = new(typeof(Button))
         {
-            e.Handled = !int.TryParse(e.Text, out _) && e.Text != "";
-            if (!e.Handled && sender is TextBox tBox && tBox.GetLineLength(0) >= 2)
+            Setters =
             {
+                new Setter(Button.ForegroundProperty, new SolidColorBrush(Colors.Black)),
+                new Setter(Button.BackgroundProperty, new SolidColorBrush(Colors.White)),
+                new Setter(Button.TemplateProperty, new ControlTemplate(typeof(Button))
+                {
+                    Triggers =
+                    {
+                        new Trigger
+                        {
+                            Property = Button.IsPressedProperty,
+                            Value = true,
+                            EnterActions =
+                            {
+                                new BeginStoryboard
+                                {
+                                    Storyboard = ToBlackBg
+                                }
+                            },
+                            ExitActions =
+                            {
+                                new BeginStoryboard
+                                {
+                                    Storyboard = ToWhiteBg
+                                }
+                            }
+                        },
+                        new MultiTrigger
+                        {
+                            Conditions =
+                            {
+                                new Condition
+                                {
+                                    Property = Button.IsMouseOverProperty,
+                                    Value = true
+                                },
+                                new Condition
+                                {
+                                    Property = Button.IsPressedProperty,
+                                    Value = false
+                                }
+                            },
+                            EnterActions =
+                            {
+                                new BeginStoryboard
+                                {
+                                    Storyboard = ToGray
+                                }
+                            },
+                            ExitActions =
+                            {
+                                new BeginStoryboard
+                                {
+                                    Storyboard = ToWhiteBg
+                                }
+                            }
+                        }
+                    },
+                    VisualTree = BtnFefLight
+                })
+            },
+            Triggers =
+            {
+                new MultiTrigger
+                {
+                    Conditions =
+                    {
+                        new Condition
+                        {
+                            Property = Button.IsMouseOverProperty,
+                            Value = true
+                        },
+                        new Condition
+                        {
+                            Property = Button.IsPressedProperty,
+                            Value = false
+                        }
+                    },
+                    EnterActions =
+                    {
+                        new BeginStoryboard
+                        {
+                            Storyboard = ToWhiteFg
+                        }
+                    },
+                    ExitActions =
+                    {
+                        new BeginStoryboard
+                        {
+                            Storyboard = ToBlackFg
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+    private void DepartmentChecker()
+    {
+        ReloadCheckBoxes();
+        if (!CheckRanks(_userData, out var udSafe, _prefs.Department))
+        {
+            Setup setup = new(udSafe, _prefs.Department, _note);
+            setup.ShowDialog();
+            if (setup.DialogResult ?? false)
+            {
+                _userData = setup.UData;
+                _note = setup.Notes;
+                ReloadData(true);
+            }
+            else
+            {
+                _prefs.Department = _loadedDep;
+                ReloadCheckBoxes();
+            }
+        }
+            
+        _loadedDep = _prefs.Department;
+    }
+
+    /// <summary>
+    /// Check if Dark Mode is enabled and change styles accordingly
+    /// </summary>
+    private void DarkModeChecker()
+    {
+        var imgSource = _prefs.Department + (_prefs.DarkMode ? "_dark" : "");
+
+        BitmapImage img = new(new Uri("/" + imgSource + ".png", UriKind.Relative));
+        IconFor.Source = img;
+        IconBack.Source = img;
+
+        mitDarkMode.IsChecked = _prefs.DarkMode;
+        _isDarkMode = _prefs.DarkMode;
+
+        _ = Enum.TryParse(imgSource, out DepartmentColors colorEnum);
+        var colorString = "#" + ((int)colorEnum).ToString("X").PadLeft(6, '0');
+        gstStart.Color = (Color)ColorConverter.ConvertFromString(colorString);
+
+        if (_prefs.DarkMode)
+        {
+            gstStop.Color = Color.FromRgb(0, 0, 0);
+            Resources[typeof(Label)] = new Style(typeof(Label))
+            {
+                Setters =
+                {
+                    new Setter(ForegroundProperty, Brushes.White)
+                }
+            };
+            Resources[typeof(MenuItem)] = new Style(typeof(MenuItem))
+            {
+                Setters =
+                {
+                    new Setter(ForegroundProperty, Brushes.White)
+                }
+            };
+            Resources[typeof(TextBox)] = new Style(typeof(TextBox))
+            {
+                Setters =
+                {
+                    new Setter(ForegroundProperty, Brushes.White),
+                    new Setter(BackgroundProperty, Brushes.Black),
+                    new Setter(OpacityProperty, 0.5)
+                }
+            };
+            Resources[typeof(Button)] = _darkButtonStyle;
+        }
+        else
+        {
+            gstStop.Color = Color.FromRgb(255, 255, 255);
+            Resources[typeof(Label)] = new Style(typeof(Label))
+            {
+                Setters =
+                {
+                    new Setter(ForegroundProperty, Brushes.Black)
+                }
+            };
+            Resources[typeof(MenuItem)] = new Style(typeof(MenuItem))
+            {
+                Setters =
+                {
+                    new Setter(ForegroundProperty, Brushes.Black)
+                }
+            };
+            Resources[typeof(TextBox)] = new Style(typeof(TextBox))
+            {
+                Setters =
+                {
+                    new Setter(ForegroundProperty, Brushes.Black),
+                    new Setter(BackgroundProperty, Brushes.White),
+                    new Setter(OpacityProperty, 0.5)
+                }
+            };
+            Resources[typeof(Button)] = _lightButtonStyle;
+        }
+    }
+
+    /// <summary>
+    /// Reload all data, optionally the note and
+    /// <br/>additionally check dark mode and department
+    /// </summary>
+    private void ReloadData(bool resetNote = false)
+    {
+        txtUsername.Content = _userData.Username;
+        txtCurrentRank.Content = _userData.RankString.PrepRankString();
+        numQuotaDone.Content = _userData.QuotaDone + " / " + _userData.CurrentQuota + " minutes";
+        numTotalTime.Content = _userData.TotalTime + " minute(s)";
+        if (resetNote) txtNote.Text = _note;
+        mitShowQuota.IsChecked = _userData.ShowQuotaDone;
+
+            
+
+        mitDarkMode.IsChecked = _prefs.DarkMode;
+
+        if (_isDarkMode != _prefs.DarkMode)
+            DarkModeChecker();
+        if (_loadedDep != _prefs.Department)
+            DepartmentChecker();
+    }
+
+    /// <summary>
+    /// Reloads all the Department Checkboxes to reflect
+    /// <br/>the current department in prefs.Department
+    /// </summary>
+    private void ReloadCheckBoxes()
+    {
+        mitDoS.IsChecked = _prefs.Department == Department.DoS;
+        mitTRT.IsChecked = _prefs.Department == Department.TRT;
+        mitE11.IsChecked = _prefs.Department == Department.Epsilon11;
+        mitA1.IsChecked = _prefs.Department == Department.Alpha1;
+        mitN7.IsChecked = _prefs.Department == Department.Nu7;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private void mitSetup_Click(object sender, RoutedEventArgs e)
+    {
+        CheckRanks(_userData, out var udSafe, _prefs.Department);
+        Setup setup = new(udSafe, _prefs.Department, _note);
+        setup.ShowDialog();
+        if (setup.DialogResult ?? false)
+        {
+            _userData = setup.UData;
+            _note = setup.Notes;
+            ReloadData(true);
+        }
+    }
+
+    private void mitDarkMode_Click(object sender, RoutedEventArgs e)
+    {
+        _prefs.DarkMode = mitDarkMode.IsChecked;
+        DarkModeChecker();
+        SavePreferences(_prefs);
+    }
+
+    private void mitShowQuota_Click(object sender, RoutedEventArgs e)
+    {
+        _userData.ShowQuotaDone = mitShowQuota.IsChecked;
+        ReloadData();
+        SaveUserData(_userData);
+    }
+
+    private void btnGenerateLog_Click(object sender, RoutedEventArgs e)
+    {
+        ReloadData();
+        if (!int.TryParse(numStartHour.Text, out var startHour) || !int.TryParse(numStartMinute.Text, out var startMinutes) || !int.TryParse(numEndHour.Text, out var endHour) || !int.TryParse(numEndMinute.Text, out var endMinutes)) return;
+        TimeSpan startTime = new(startHour, startMinutes, 0);
+        TimeSpan endTime = new(endHour, endMinutes, 0);
+        if (endTime < startTime)
+        {
+            endTime = endTime.Add(TimeSpan.FromDays(1));
+        }
+        var difference = (int)(endTime - startTime).TotalMinutes;
+        var tTime = _userData.TotalTime + difference;
+        var qDone = _userData.QuotaDone + difference;
+        _logQDone = qDone;
+        _logTTime = tTime;
+        txtLog.Text = GenerateLog(_prefs, _userData, startTime.ToString(@"hh\:mm"), endTime.ToString(@"hh\:mm"), difference, txtNote.Text, _format);
+        grdLogGrid.Visibility = Visibility.Visible;
+    }
+
+    private void InputNumCheck(object sender, TextCompositionEventArgs e)
+    {
+        e.Handled = !int.TryParse(e.Text, out _) && e.Text != "";
+        if (!e.Handled && sender is TextBox tBox && tBox.GetLineLength(0) >= 2)
+        {
+            switch (tBox.Name)
+            {
+                case "numStartHour":
+                    numStartMinute.Focus();
+                    numStartMinute.CaretIndex = 0;
+                    break;
+                case "numStartMinute":
+                    numEndHour.Focus();
+                    numEndHour.CaretIndex = 0;
+                    break;
+                case "numEndHour":
+                    numEndMinute.Focus();
+                    numEndMinute.CaretIndex = 0;
+                    break;
+                case "numEndMinute":
+                    btnGenerateLog.Focus();
+                    break;
+            }
+        }
+    }
+
+    private void KeyDownNumCheck(object sender, KeyEventArgs e)
+    {
+        if (sender is TextBox tBox)
+        {
+            if (e.Key == Key.Left)
+            {
+                if (tBox.CaretIndex > 0) return;
+                e.Handled = true;
+                switch (tBox.Name)
+                {
+                    case "numStartMinute":
+                        if (tBox.CaretIndex == 0) { numStartHour.Focus(); numStartHour.CaretIndex = numStartHour.GetLineLength(0); }
+                        break;
+                    case "numEndHour":
+                        if (tBox.CaretIndex == 0) { numStartMinute.Focus(); numStartMinute.CaretIndex = numStartMinute.GetLineLength(0); }
+                        break;
+                    case "numEndMinute":
+                        if (tBox.CaretIndex == 0) { numEndHour.Focus(); numEndHour.CaretIndex = numEndHour.GetLineLength(0); }
+                        break;
+                }
+            }
+            else if (e.Key == Key.Right)
+            {
+                if (tBox.CaretIndex < tBox.GetLineLength(0)) return;
+                e.Handled = true;
                 switch (tBox.Name)
                 {
                     case "numStartHour":
-                        numStartMinute.Focus();
-                        numStartMinute.CaretIndex = 0;
+                        if (tBox.CaretIndex == tBox.GetLineLength(0)) { numStartMinute.Focus(); numStartHour.CaretIndex = 0; }
                         break;
                     case "numStartMinute":
-                        numEndHour.Focus();
-                        numEndHour.CaretIndex = 0;
+                        if (tBox.CaretIndex == tBox.GetLineLength(0)) { numEndHour.Focus(); numEndHour.CaretIndex = 0; }
                         break;
                     case "numEndHour":
-                        numEndMinute.Focus();
-                        numEndMinute.CaretIndex = 0;
-                        break;
-                    case "numEndMinute":
-                        btnGenerateLog.Focus();
+                        if (tBox.CaretIndex == tBox.GetLineLength(0)) { numEndMinute.Focus(); numStartMinute.CaretIndex = 0; }
                         break;
                 }
             }
         }
+    }
 
-        private void KeyDownNumCheck(object sender, KeyEventArgs e)
+    private void PasteNumCheck(object sender, ExecutedRoutedEventArgs e)
+    {
+        e.Handled = e.Command == ApplicationCommands.Paste && !int.TryParse(Clipboard.GetText(), out _);
+    }
+
+    private async void btnCopyLog_Click(object sender, RoutedEventArgs e)
+    {
+        var copied = false;
+        for (var i = 0; i < 3 && !copied; i++)
         {
-            if (sender is TextBox tBox)
+            try
             {
-                if (e.Key == Key.Left)
-                {
-                    if (tBox.CaretIndex > 0) return;
-                    e.Handled = true;
-                    switch (tBox.Name)
-                    {
-                        case "numStartMinute":
-                            if (tBox.CaretIndex == 0) { numStartHour.Focus(); numStartHour.CaretIndex = numStartHour.GetLineLength(0); }
-                            break;
-                        case "numEndHour":
-                            if (tBox.CaretIndex == 0) { numStartMinute.Focus(); numStartMinute.CaretIndex = numStartMinute.GetLineLength(0); }
-                            break;
-                        case "numEndMinute":
-                            if (tBox.CaretIndex == 0) { numEndHour.Focus(); numEndHour.CaretIndex = numEndHour.GetLineLength(0); }
-                            break;
-                    }
-                }
-                else if (e.Key == Key.Right)
-                {
-                    if (tBox.CaretIndex < tBox.GetLineLength(0)) return;
-                    e.Handled = true;
-                    switch (tBox.Name)
-                    {
-                        case "numStartHour":
-                            if (tBox.CaretIndex == tBox.GetLineLength(0)) { numStartMinute.Focus(); numStartHour.CaretIndex = 0; }
-                            break;
-                        case "numStartMinute":
-                            if (tBox.CaretIndex == tBox.GetLineLength(0)) { numEndHour.Focus(); numEndHour.CaretIndex = 0; }
-                            break;
-                        case "numEndHour":
-                            if (tBox.CaretIndex == tBox.GetLineLength(0)) { numEndMinute.Focus(); numStartMinute.CaretIndex = 0; }
-                            break;
-                    }
-                }
+                Clipboard.SetText(txtLog.Text);
+                copied = true;
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                await Task.Delay(100);
             }
         }
+        btnCopyLog.Content = "Copied!";
+        _userData.TotalTime = _logTTime;
+        _userData.QuotaDone = _logQDone;
+        SaveUserData(_userData);
+        ReloadData();
+        await Task.Delay(1000);
+        btnCopyLog.Content = "Copy Log (Save Data)";
+        grdLogGrid.Visibility = Visibility.Hidden;
+    }
 
-        private void PasteNumCheck(object sender, ExecutedRoutedEventArgs e)
+    private void btnQuotaReset_Click(object sender, RoutedEventArgs e)
+    {
+        _userData.QuotaDone = 0;
+        SaveUserData(_userData);
+        SavePreferences(_prefs);
+        ReloadData();
+    }
+
+    private void mitLicense_Click(object sender, RoutedEventArgs e)
+    {
+        new LicWindow().ShowDialog();
+    }
+
+    private void mitAbout_Click(object sender, RoutedEventArgs e)
+    {
+        new AboutWindow().ShowDialog();
+    }
+
+    private void mitFormat_Click(object sender, RoutedEventArgs e)
+    {
+        Format f = new(_format, _prefs);
+        f.ShowDialog();
+        if (f.DialogResult ?? false)
         {
-            e.Handled = e.Command == ApplicationCommands.Paste && !int.TryParse(Clipboard.GetText(), out _);
+            _format = f.CurrentFormat;
+            _prefs = f.Preferences;
         }
+        SavePreferences(_prefs);
+    }
 
-        private async void btnCopyLog_Click(object sender, RoutedEventArgs e)
+    private void departmentMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem element && element.Parent is MenuItem parent)
         {
-            bool copied = false;
-            for (int i = 0; i < 3 && !copied; i++)
+            foreach (var item in parent.Items.OfType<MenuItem>())
             {
-                try
-                {
-                    Clipboard.SetText(txtLog.Text);
-                    copied = true;
-                }
-                catch (System.Runtime.InteropServices.COMException)
-                {
-                    await Task.Delay(100);
-                }
+                if (item != element) item.IsChecked = false;
             }
-            btnCopyLog.Content = "Copied!";
-            userData.TotalTime = log_tTime;
-            userData.QuotaDone = log_qDone;
-            ReloadData();
-            await Task.Delay(1000);
-            btnCopyLog.Content = "Copy Log (Save Data)";
-            grdLogGrid.Visibility = Visibility.Hidden;
-        }
-
-        private void btnQuotaReset_Click(object sender, RoutedEventArgs e)
-        {
-            userData.QuotaDone = 0;
-            SaveUserData(userData);
-            SavePreferences(prefs);
-            ReloadData();
-        }
-
-        private void mitLicense_Click(object sender, RoutedEventArgs e)
-        {
-            new LicWindow().ShowDialog();
-        }
-
-        private void mitAbout_Click(object sender, RoutedEventArgs e)
-        {
-            new AboutWindow().ShowDialog();
-        }
-
-        private void mitFormat_Click(object sender, RoutedEventArgs e)
-        {
-            Format f = new(format);
-            f.ShowDialog();
-            if (f.DialogResult ?? false)
-                format = f.format;
+            element.IsChecked = true;
+            _prefs.Department = element.Name switch
+            {
+                "mitDoS" => Department.DoS,
+                "mitTRT" => Department.TRT,
+                "mitA1" => Department.Alpha1,
+                "mitE11" => Department.Epsilon11,
+                "mitN7" => Department.Nu7,
+                _ => _prefs.Department
+            };
+            DepartmentChecker();
+            DarkModeChecker();
+            SaveUserData(_userData);
+            SavePreferences(_prefs);
         }
     }
 }
