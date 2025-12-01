@@ -5,38 +5,101 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SALG__Application_"
         mc:Ignorable="d"
-        Title="Format Editor" Height="425" Width="560"
+        Title="Format Editor" Height="800" Width="560"
         ResizeMode="NoResize"
         Closing="Window_Closing">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <TextBlock Margin="10">
-            Cheatsheet:<LineBreak/>
-            <LineBreak/>
-            $(username) - Username<LineBreak/>
-            $(rank) - Rank<LineBreak/>
-            $(start_time) - Start Time<LineBreak/>
-            $(end_time) - End Time<LineBreak/>
-            $(time_on_site) - Total Time on-site<LineBreak/>
-            $(total_time) - Total Time<LineBreak/>
-            $(quota_done) - Quota Done<LineBreak/>
-            $(current_quota) - Current Quota<LineBreak/>
-            $(notes) - Notes<LineBreak/>
-            <LineBreak/>
-            $(q) - Represents a line togglable with the<LineBreak/>
-            "Show Quota" option.<LineBreak/>
-            Goes at the start of the line.<LineBreak/>
-            Example:<LineBreak/>
-            $(q)-# Quota: $(quota_done) / $(quota_needed)<LineBreak/>
-            <LineBreak/>
-            $(n) - Represents a line containing notes.<LineBreak/>
-            (If no notes, line is omitted;<LineBreak/>
-            Goes at the start of the line)
-        </TextBlock>
-        <TextBox Grid.Column="1" x:Name="txtFormat" TextWrapping="NoWrap" Margin="10" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"/>
-        <Button x:Name="btnSaveButton" Content="Save" Margin="5" Height="30" Width="100" VerticalAlignment="Bottom" HorizontalAlignment="Left" Click="btnSaveButton_Click"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="425"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Margin="10">
+                Cheatsheet:<LineBreak/>
+                <LineBreak/>
+                $(username) - Username<LineBreak/>
+                $(rank) - Rank<LineBreak/>
+                $(start_time) - Start Time<LineBreak/>
+                $(end_time) - End Time<LineBreak/>
+                $(time_on_site) - Total Time on-site<LineBreak/>
+                $(total_time) - Total Time<LineBreak/>
+                $(quota_done) - Quota Done<LineBreak/>
+                $(current_quota) - Current Quota<LineBreak/>
+                $(notes) - Notes<LineBreak/>
+                <LineBreak/>
+                $(q) - Represents a line togglable with the<LineBreak/>
+                "Show Quota" option.<LineBreak/>
+                Goes at the start of the line.<LineBreak/>
+                Example:<LineBreak/>
+                $(q)-# Quota: $(quota_done) / $(quota_needed)<LineBreak/>
+                <LineBreak/>
+                $(n) - Represents a line containing notes.<LineBreak/>
+                (If no notes, line is omitted;<LineBreak/>
+                Goes at the start of the line)
+            </TextBlock>
+            <TextBox Grid.Column="1" x:Name="txtFormat" TextWrapping="NoWrap" Margin="10" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"/>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Grid.Column="0" BorderBrush="Black" BorderThickness="1">
+                <Grid Margin="10">
+                    <Label>DoS prefix</Label>
+                    <TextBox Margin="0,25" Panel.ZIndex="1" x:Name="txtDoSPrefix"/>
+                    <Label VerticalContentAlignment="Bottom">Enabled:</Label>
+                    <CheckBox VerticalAlignment="Bottom" Margin="60,5" Click="CheckBox_Click" x:Name="chkDoSEnabled"/>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Grid.Column="0" BorderBrush="Black" BorderThickness="1">
+                <Grid Margin="10">
+                    <Label>TRT prefix</Label>
+                    <TextBox Margin="0,25" Panel.ZIndex="1" x:Name="txtTRTPrefix"/>
+                    <Label VerticalContentAlignment="Bottom">Enabled:</Label>
+                    <CheckBox VerticalAlignment="Bottom" Margin="60,5" Click="CheckBox_Click" x:Name="chkTRTEnabled"/>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="2" Grid.Column="0" BorderBrush="DarkRed" BorderThickness="1">
+                <Grid Margin="10">
+                    <Label>Alpha-1 prefix</Label>
+                    <TextBox Margin="0,25" Panel.ZIndex="1" x:Name="txtA1Prefix"/>
+                    <Label VerticalContentAlignment="Bottom">Enabled:</Label>
+                    <CheckBox VerticalAlignment="Bottom" Margin="60,5" Click="CheckBox_Click" x:Name="chkA1Enabled"/>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="0" Grid.Column="1" BorderBrush="Brown" BorderThickness="1">
+                <Grid Margin="10">
+                    <Label>Epsilon-11 prefix</Label>
+                    <TextBox Margin="0,25" Panel.ZIndex="1" x:Name="txtE11Prefix"/>
+                    <Label VerticalContentAlignment="Bottom">Enabled:</Label>
+                    <CheckBox VerticalAlignment="Bottom" Margin="60,5" Click="CheckBox_Click" x:Name="chkE11Enabled"/>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Grid.Column="1" BorderBrush="DarkGreen" BorderThickness="1">
+                <Grid Margin="10">
+                    <Label>Nu-7 prefix</Label>
+                    <TextBox Margin="0,25" Panel.ZIndex="1" x:Name="txtNu7Prefix"/>
+                    <Label VerticalContentAlignment="Bottom">Enabled:</Label>
+                    <CheckBox VerticalAlignment="Bottom" Margin="60,5" Click="CheckBox_Click" x:Name="chkNu7Enabled"/>
+                </Grid>
+            </Border>
+
+            <Button x:Name="btnSaveButton" Grid.Column="1" Grid.Row="2" Content="Save" Margin="5" Height="30" Width="100" VerticalAlignment="Bottom" HorizontalAlignment="Right" Click="btnSaveButton_Click"/>
+        </Grid>
     </Grid>
 </Window>

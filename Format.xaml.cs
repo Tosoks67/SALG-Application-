@@ -1,62 +1,109 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using static SALG__Application_.Defaults;
+using static SALG__Application_.FilePaths;
+using static SALG__Application_.Functions;
 
-namespace SALG__Application_
+namespace SALG__Application_;
+
+public partial class Format
 {
-    /// <summary>
-    /// Logika interakcji dla klasy Format.xaml
-    /// </summary>
-    public partial class Format : Window
+    public string CurrentFormat { get; private set; }
+    public Prefs Preferences { get; }
+
+    private bool _saving;
+    public Format(string format, Prefs prefs)
     {
-        public string format { get; private set; }
+        InitializeComponent();
+        CurrentFormat = format;
+        Preferences = prefs;
+        txtFormat.Text = CurrentFormat;
 
-        private bool saving = false;
-        public Format(string f)
-        {
-            format = f;
-            InitializeComponent();
-            txtFormat.Text = format;
-        }
+        chkDoSEnabled.IsChecked = Preferences.DoSPrefix.Enabled;
+        txtDoSPrefix.Text = Preferences.DoSPrefix.Text;
+        txtDoSPrefix.IsEnabled = Preferences.DoSPrefix.Enabled;
 
-        private void btnSaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            saving = true;
-            this.Close();
-        }
+        chkTRTEnabled.IsChecked = Preferences.TrtPrefix.Enabled;
+        txtTRTPrefix.Text = Preferences.TrtPrefix.Text;
+        txtTRTPrefix.IsEnabled = Preferences.TrtPrefix.Enabled;
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        chkA1Enabled.IsChecked = Preferences.Alpha1Prefix.Enabled;
+        txtA1Prefix.Text = Preferences.Alpha1Prefix.Text;
+        txtA1Prefix.IsEnabled = Preferences.Alpha1Prefix.Enabled;
+
+        chkE11Enabled.IsChecked = Preferences.Epsilon11Prefix.Enabled;
+        txtE11Prefix.Text = Preferences.Epsilon11Prefix.Text;
+        txtE11Prefix.IsEnabled = Preferences.Epsilon11Prefix.Enabled;
+
+        chkNu7Enabled.IsChecked = Preferences.Nu7Prefix.Enabled;
+        txtNu7Prefix.Text = Preferences.Nu7Prefix.Text;
+        txtNu7Prefix.IsEnabled = Preferences.Nu7Prefix.Enabled;
+    }
+
+    private void btnSaveButton_Click(object sender, RoutedEventArgs e)
+    {
+        _saving = true;
+        this.Close();
+    }
+
+    private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (!_saving)
         {
-            if (!saving)
+            var save = MessageBox.Show("Do you wish to save changes?", "Confirm", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+            if (save == MessageBoxResult.Cancel)
             {
-                MessageBoxResult save = MessageBox.Show("Do you wish to save changes?", "Confirm", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
-                if (save == MessageBoxResult.Cancel)
-                {
-                    e.Cancel = true;
-                    saving = false;
-                    return;
-                }
-                else
-                    DialogResult = save == MessageBoxResult.Yes;
+                e.Cancel = true;
+                _saving = false;
+                return;
             }
-            if (string.IsNullOrWhiteSpace(txtFormat.Text))
-            {
-                MessageBoxResult result = MessageBox.Show("Your format is empty. Do you wish to use the default format instead?", "Information", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                format = result == MessageBoxResult.No ? txtFormat.Text : DefaultFormat;
-            }
-            else
-                format = txtFormat.Text;
         }
+        if (string.IsNullOrWhiteSpace(txtFormat.Text))
+        {
+            var result = MessageBox.Show("Your format is empty. Do you wish to use the default format instead?", "Information", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            CurrentFormat = result == MessageBoxResult.No ? txtFormat.Text : DefaultFormat;
+        }
+        else
+            CurrentFormat = txtFormat.Text;
+
+        Preferences.DoSPrefix.Text = txtDoSPrefix.Text;
+        Preferences.DoSPrefix.Enabled = chkDoSEnabled.IsChecked ?? true;
+
+        Preferences.TrtPrefix.Text = txtTRTPrefix.Text;
+        Preferences.TrtPrefix.Enabled = chkTRTEnabled.IsChecked ?? true;
+
+        Preferences.Alpha1Prefix.Text = txtA1Prefix.Text;
+        Preferences.Alpha1Prefix.Enabled = chkA1Enabled.IsChecked ?? true;
+
+        Preferences.Epsilon11Prefix.Text = txtE11Prefix.Text;
+        Preferences.Epsilon11Prefix.Enabled = chkE11Enabled.IsChecked ?? true;
+
+        Preferences.Nu7Prefix.Text = txtNu7Prefix.Text;
+        Preferences.Nu7Prefix.Enabled = chkNu7Enabled.IsChecked ?? true;
+
+        DialogResult = true;
+        Log(Preferences.ToString());
+        Log(CurrentFormat);
+        File.WriteAllText(FormatPath, CurrentFormat);
+    }
+
+    private void CheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is CheckBox cb)
+        {
+            cb.CheckTextBoxEnabled();
+        }
+    }
+}
+
+internal static class FormatFunctions
+{
+    public static void CheckTextBoxEnabled(this CheckBox cb)
+    {
+        var parent = (Grid) cb.Parent;
+        if (parent is null) return;
+        parent.Children.OfType<TextBox>().First().IsEnabled = cb.IsChecked ?? true;
     }
 }
