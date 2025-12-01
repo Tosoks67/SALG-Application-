@@ -1,123 +1,108 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography.Xml;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using static SALG__Application_.Functions;
+using static SALG__Application_.Defaults;
 using static SALG__Application_.FilePaths;
 using static SALG__Application_.SaveHandler;
-using static SALG__Application_.Defaults;
 
-namespace SALG__Application_
+namespace SALG__Application_;
+
+/// <summary>
+/// Logika interakcji dla klasy Setup.xaml
+/// </summary>
+public partial class Setup
 {
-    /// <summary>
-    /// Logika interakcji dla klasy Setup.xaml
-    /// </summary>
-    public partial class Setup : Window
+    public UserData UData { get; }
+    private readonly Department _currentDepartment;
+    public string Notes { get; private set; }
+    public Setup(UserData dat, Department dep, string not)
     {
-        public UserData UData { get; private set; }
-        private readonly bool TRT;
-        public string notes;
-        public Setup(UserData ud, bool tactResTean, string n)
+        InitializeComponent();
+        UData = dat;
+        _currentDepartment = dep;
+        Notes = not;
+        IconFor.Source = new BitmapImage(new Uri("/" + _currentDepartment + "_dark.png", UriKind.Relative));
+        IconBack.Source = new BitmapImage(new Uri("/" + _currentDepartment + "_dark.png", UriKind.Relative));
+        txtUsername.Text = UData.Username;
+        switch (_currentDepartment)
         {
-            UData = ud;
-            TRT = tactResTean;
-            notes = n;
-            InitializeComponent();
-            string department = TRT ? "TRT" : "DoS";
-            IconFor.Source = new BitmapImage(new Uri("/" + department + "_dark.png", UriKind.Relative));
-            IconBack.Source = new BitmapImage(new Uri("/" + department + "_dark.png", UriKind.Relative));
-            txtUsername.Text = UData.Username;
-            if (TRT)
-            {
+            case Department.DoS:
+                cbxCurrentDoS.Visibility = Visibility.Visible;
+                cbxCurrentDoS.Text = UData.DoS.ToString().PrepRankString();
+                break;
+            case Department.TRT:
                 cbxCurrentTRT.Visibility = Visibility.Visible;
-                cbxCurrentTRT.Text = UData.TRTRank != TRTRank.None ? UData.TRTRank.ToString().Replace('_', ' ')[4..] : "Cadet";
-            }
-            else
-            {
-                cbxCurrentRank.Visibility = Visibility.Visible;
-                cbxCurrentRank.Text = UData.Rank != Rank.None ? UData.Rank.ToString().Replace('_', ' ') : "Cadet";
-            }
-            numQuotaDone.Text = UData.QuotaDone.ToString();
-            numTotalTime.Text = UData.TotalTime.ToString();
-            numCurrentQuota.Text = UData.CurrentQuota.ToString();
-            txtPermamentNote.Text = notes;
+                cbxCurrentTRT.Text = UData.Trt.ToString().PrepRankString();
+                break;
+            case Department.Alpha1:
+                cbxCurrentA1.Visibility = Visibility.Visible;
+                cbxCurrentA1.Text = UData.Alpha1.ToString().PrepRankString();
+                break;
+            case Department.Epsilon11:
+                cbxCurrentE11.Visibility = Visibility.Visible;
+                cbxCurrentE11.Text = UData.Epsilon11.ToString().PrepRankString();
+                break;
+            case Department.Nu7:
+                cbxCurrentN7.Visibility = Visibility.Visible;
+                cbxCurrentN7.Text = UData.Nu7.ToString().PrepRankString();
+                break;
         }
-
-        private void Save()
-        {
-            UData.RankString = TRT ? "TRT " + cbxCurrentTRT.Text : cbxCurrentRank.Text;
-            UData.Username = txtUsername.Text;
-            if (int.TryParse(numQuotaDone.Text, out int qDone))
-                UData.QuotaDone = qDone;
-            else
-                UData.QuotaDone = 0;
-
-            if (int.TryParse(numTotalTime.Text, out int tTime))
-                UData.TotalTime = tTime;
-            else
-                UData.TotalTime = 0;
-
-            if (int.TryParse(numCurrentQuota.Text, out int cQuota))
-                UData.CurrentQuota = cQuota;
-            else
-                UData.CurrentQuota = 0;
-
-            notes = txtPermamentNote.Text;
-            SaveUserData(UData);
-            File.WriteAllText(NotesPath, notes + NotesMessage);
-        }
-
-        private void InputNumCheck(object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = !int.TryParse(e.Text, out _) && e.Text != "";
-        }
-
-        private void PasteNumCheck(object sender, ExecutedRoutedEventArgs e)
-        {
-            e.Handled = e.Command == ApplicationCommands.Paste && !int.TryParse(Clipboard.GetText(), out _);
-        }
-
-        private void btnClose_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
-        private void Window_Close(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            string user = txtUsername.Text;
-            string qDone = numQuotaDone.Text;
-            string tTime = numTotalTime.Text;
-            string cQuota = numCurrentQuota.Text;
-            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(qDone) || string.IsNullOrWhiteSpace(tTime) || string.IsNullOrWhiteSpace(cQuota))
-            {
-                e.Cancel = true;
-                MessageBox.Show("Please fill in all fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-            Save();
-            DialogResult = true;
-        }
-
-        private void txtTitle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            this.DragMove();
-        }
-
-        private void btnSaveButton_Click(Object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
+        numQuotaDone.Text = UData.QuotaDone.ToString();
+        numTotalTime.Text = UData.TotalTime.ToString();
+        numCurrentQuota.Text = UData.CurrentQuota.ToString();
+        txtPermanentNote.Text = Notes;
     }
+
+    private void Save()
+    {
+        UData.RankString = _currentDepartment switch
+        {
+            Department.DoS => cbxCurrentDoS.Text.StringToRankName(_currentDepartment),
+            Department.TRT => cbxCurrentTRT.Text.StringToRankName(_currentDepartment),
+            Department.Alpha1 => cbxCurrentA1.Text.StringToRankName(_currentDepartment),
+            Department.Epsilon11 => cbxCurrentE11.Text.StringToRankName(_currentDepartment),
+            Department.Nu7 => cbxCurrentN7.Text.StringToRankName(_currentDepartment),
+            _ => "None"
+        };
+        UData.Username = txtUsername.Text;
+        UData.QuotaDone = int.TryParse(numQuotaDone.Text, out var qDone) ? qDone : 0;
+        UData.TotalTime = int.TryParse(numTotalTime.Text, out var tTime) ? tTime : 0;
+        UData.CurrentQuota = int.TryParse(numCurrentQuota.Text, out var cQuota) ? cQuota : 0;
+        Notes = txtPermanentNote.Text;
+        SaveUserData(UData);
+        File.WriteAllText(NotesPath, Notes + NotesMessage);
+    }
+
+    private void InputNumCheck(object sender, TextCompositionEventArgs e)
+    {
+        e.Handled = !int.TryParse(e.Text, out _) && e.Text != "";
+    }
+
+    private void PasteNumCheck(object sender, ExecutedRoutedEventArgs e)
+    {
+        e.Handled = e.Command == ApplicationCommands.Paste && !int.TryParse(Clipboard.GetText(), out _);
+    }
+
+    private void btnClose_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void Window_Close(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(txtUsername.Text) ||
+            string.IsNullOrWhiteSpace(numQuotaDone.Text) ||
+            string.IsNullOrWhiteSpace(numTotalTime.Text) ||
+            string.IsNullOrWhiteSpace(numCurrentQuota.Text))
+        {
+            e.Cancel = true;
+            MessageBox.Show("Please fill in all fields.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+        Save();
+        DialogResult = true;
+    }
+
+    private void txtTitle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
+
+    private void btnSaveButton_Click(object sender, RoutedEventArgs e) => Close();
 }
