@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SALG__Application_"
         mc:Ignorable="d"
         Title="Security Activity Log Generator (SALG)"
         Height="500"
@@ -57,14 +56,20 @@
                 <MenuItem Header="Options">
                     <MenuItem x:Name="mitShowQuota" Style="{StaticResource MItemChild}" Header="Show Quota" IsCheckable="True" IsChecked="True" Click="mitShowQuota_Click"/>
                     <MenuItem x:Name="mitDarkMode" Style="{StaticResource MItemChild}" Header="Dark Mode" IsCheckable="True" Click="mitDarkMode_Click"/>
-                    <MenuItem x:Name="mitTRT" Style="{StaticResource MItemChild}" Header="Tactical Response Team" IsCheckable="True" Click="mitTRT_Click"/>
+                    <MenuItem Style="{StaticResource MItemChild}" Header="(Sub) Department">
+                        <MenuItem x:Name="mitDoS" Style="{StaticResource MItemChild}" Header="Department of Security" IsCheckable="True" Click="departmentMenuItem_Click"/>
+                        <MenuItem x:Name="mitTRT" Style="{StaticResource MItemChild}" Header="Tactical Response Team" IsCheckable="True" Click="departmentMenuItem_Click"/>
+                        <MenuItem x:Name="mitA1" Style="{StaticResource MItemChild}" Header="MTF Alpha-1" IsCheckable="True" Click="departmentMenuItem_Click"/>
+                        <MenuItem x:Name="mitE11" Style="{StaticResource MItemChild}" Header="MTF Epsilon-11" IsCheckable="True" Click="departmentMenuItem_Click"/>
+                        <MenuItem x:Name="mitN7" Style="{StaticResource MItemChild}" Header="MTF Nu-7" IsCheckable="True" Click="departmentMenuItem_Click"/>
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="Help">
                     <MenuItem x:Name="mitAbout" Style="{StaticResource MItemChild}" Header="About" Click="mitAbout_Click"/>
                     <MenuItem x:Name="mitLicense" Style="{StaticResource MItemChild}" Header="License" Click="mitLicense_Click"/>
                 </MenuItem>
             </Menu>
-            <Grid Width="350" Height="150" VerticalAlignment="Top" HorizontalAlignment="Left">
+            <Grid Width="400" Height="150" VerticalAlignment="Top" HorizontalAlignment="Left">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
