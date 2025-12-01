@@ -3,8 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SALG__Application_"
-        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="Setup"
         Height="450"
@@ -124,7 +122,7 @@
                 <TextBox x:Name="txtUsername" Grid.Column="1"/>
 
                 <Label Grid.Row="1">Current Rank:</Label>
-                <ComboBox x:Name="cbxCurrentRank" Grid.Row="1" Grid.Column="1" SelectedIndex="0" Visibility="Hidden">
+                <ComboBox x:Name="cbxCurrentDoS" Grid.Row="1" Grid.Column="1" SelectedIndex="0" Visibility="Hidden">
                     <ComboBoxItem Content="Cadet"/>
                     <ComboBoxItem Content="Private"/>
                     <ComboBoxItem Content="Lance Corporal"/>
@@ -143,6 +141,36 @@
                     <ComboBoxItem Content="First Sergeant"/>
                     <ComboBoxItem Content="Captain"/>
                 </ComboBox>
+                <ComboBox x:Name="cbxCurrentA1" Grid.Row="1" Grid.Column="1" SelectedIndex="0" Visibility="Hidden">
+                    <ComboBoxItem Content="Operator"/>
+                    <ComboBoxItem Content="Tactician"/>
+                    <ComboBoxItem Content="Field Sergeant"/>
+                    <ComboBoxItem Content="First Sergeant"/>
+                    <ComboBoxItem Content="Lieutenant"/>
+                    <ComboBoxItem Content="Field Commander"/>
+                    <ComboBoxItem Content="Assistant Director of Task Forces"/>
+                </ComboBox>
+                <ComboBox x:Name="cbxCurrentE11" Grid.Row="1" Grid.Column="1" SelectedIndex="0" Visibility="Hidden">
+                    <ComboBoxItem Content="Trainee"/>
+                    <ComboBoxItem Content="Probationary Operative"/>
+                    <ComboBoxItem Content="Operative"/>
+                    <ComboBoxItem Content="Agent"/>
+                    <ComboBoxItem Content="Field Sergeant"/>
+                    <ComboBoxItem Content="First Sergeant"/>
+                    <ComboBoxItem Content="Lieutenant"/>
+                    <ComboBoxItem Content="Field Captain"/>
+                </ComboBox>
+                <ComboBox x:Name="cbxCurrentN7" Grid.Row="1" Grid.Column="1" SelectedIndex="0" Visibility="Hidden">
+                    <ComboBoxItem Content="Recruit"/>
+                    <ComboBoxItem Content="Trainee"/>
+                    <ComboBoxItem Content="Probationary Operative"/>
+                    <ComboBoxItem Content="Private"/>
+                    <ComboBoxItem Content="Specialist"/>
+                    <ComboBoxItem Content="Field Sergeant"/>
+                    <ComboBoxItem Content="First Sergeant"/>
+                    <ComboBoxItem Content="Lieutenant"/>
+                    <ComboBoxItem Content="Field Captain"/>
+                </ComboBox>
 
                 <Label Grid.Row="2">Quota Done:</Label>
                 <TextBox x:Name="numQuotaDone" Grid.Column="1" Grid.Row="2" PreviewTextInput="InputNumCheck" CommandManager.PreviewExecuted="PasteNumCheck"/>
@@ -153,8 +181,8 @@
                 <Label Grid.Row="4">Current Quota:</Label>
                 <TextBox x:Name="numCurrentQuota" Grid.Column="1" Grid.Row="4" PreviewTextInput="InputNumCheck" CommandManager.PreviewExecuted="PasteNumCheck"/>
 
-                <Label Grid.Row="5">Permament Note:</Label>
-                <TextBox x:Name="txtPermamentNote" Grid.Column="1" Grid.Row="5"/>
+                <Label Grid.Row="5">Permanent Note:</Label>
+                <TextBox x:Name="txtPermanentNote" Grid.Column="1" Grid.Row="5"/>
 
                 <Button x:Name="btnSaveButton" Content="Save" Margin="5,5,100,5" Grid.Row="6" Height="30" VerticalAlignment="Bottom" BorderBrush="White" Background="Black" Foreground="White" Click="btnSaveButton_Click">
                     <Button.Style>
