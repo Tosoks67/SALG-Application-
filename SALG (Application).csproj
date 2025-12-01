@@ -5,7 +5,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>SALG__Application_</RootNamespace>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>DoS_dark.ico</ApplicationIcon>
 	<PublishSingleFile>true</PublishSingleFile>
@@ -15,18 +15,30 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<None Remove="Alpha1.png" />
+		<None Remove="Alpha1_dark.png" />
 		<None Remove="DoS_dark.ico" />
 		<None Remove="DoS_dark.png" />
 		<None Remove="DoS.png" />
+		<None Remove="Epsilon11.png" />
+		<None Remove="Epsilon11_dark.png" />
+		<None Remove="Nu7.png" />
+		<None Remove="Nu7_dark.png" />
 		<None Remove="TRT.png" />
 		<None Remove="TRT_dark.png" />
 		<None Remove="LICENSE.txt" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<Resource Include="Alpha1.png" />
+		<Resource Include="Alpha1_dark.png" />
 		<Resource Include="DoS_dark.ico" />
 		<Resource Include="DoS_dark.png" />
 		<Resource Include="DoS.png" />
+		<Resource Include="Epsilon11.png" />
+		<Resource Include="Epsilon11_dark.png" />
+		<Resource Include="Nu7.png" />
+		<Resource Include="Nu7_dark.png" />
 		<Resource Include="TRT.png" />
 		<Resource Include="TRT_dark.png" />
 		<EmbeddedResource Include="LICENSE.txt">
