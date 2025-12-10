@@ -29,7 +29,7 @@ Upon the first launch of the application *(Or if it has been fired from the Main
 
 *These files store your data. Run the "Remove Data.bat" included in every release if you wish to delete your data.*
 
-### SALG (Application) will automatically load the data files from the [console version](https://github.com/Tosoks67/SALG) if you run it in the same directory as it
+### SALG (Application) will automatically load the data files from the [console version](https://github.com/Tosoks67/SALG-Console) if you run it in the same directory as it
 
 
 
