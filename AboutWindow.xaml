@@ -19,7 +19,7 @@
             GitHub repository:
         </TextBlock>
         <TextBlock Margin="10,0,0,0" Grid.Row="1">
-            <Hyperlink NavigateUri="https://github.com/Tosoks67/SALG-Application-" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/Tosoks67/SALG-Application-</Hyperlink>
+            <Hyperlink NavigateUri="https://github.com/Tosoks67/SALG" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/Tosoks67/SALG</Hyperlink>
         </TextBlock>
     </Grid>
 </Window>
