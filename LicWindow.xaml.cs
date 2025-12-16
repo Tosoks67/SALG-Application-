@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Reflection;
 
-namespace SALG__Application_;
+namespace SALG;
 
 public partial class LicWindow
 {

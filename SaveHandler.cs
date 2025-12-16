@@ -3,10 +3,10 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
-using static SALG__Application_.Defaults;
-using static SALG__Application_.FilePaths;
+using static SALG.Defaults;
+using static SALG.FilePaths;
 
-namespace SALG__Application_;
+namespace SALG;
 
 public static class SaveHandler
 {
@@ -36,17 +36,17 @@ public static class SaveHandler
                 if (data != null) return data;
 
                 BackupCorruptFile(DataPath, "deserialized-null");
-                MessageBox.Show("Data file corrupted.\nBackup saved in %appdata%\\SALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Data file corrupted.\nBackup saved in %appdata%\\FALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (JsonException je)
             {
                 BackupCorruptFile(DataPath, "json-error-" + SanitizeForFilename(je.Message));
-                MessageBox.Show("Data file deserialization fail.\nBackup saved in %appdata%\\SALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Data file deserialization fail.\nBackup saved in %appdata%\\FALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
                 BackupCorruptFile(DataPath, "io-error-" + SanitizeForFilename(ex.Message));
-                MessageBox.Show("Data file deserialization fail.\nBackup saved in %appdata%\\SALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Data file deserialization fail.\nBackup saved in %appdata%\\FALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -103,17 +103,17 @@ public static class SaveHandler
                 if (prefs != null) return prefs;
 
                 BackupCorruptFile(PrefsPath, "deserialized-null");
-                MessageBox.Show("Preference file corrupted.\nBackup saved in %appdata%\\SALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Preference file corrupted.\nBackup saved in %appdata%\\FALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (JsonException je)
             {
                 BackupCorruptFile(PrefsPath, "json-error-" + SanitizeForFilename(je.Message));
-                MessageBox.Show("Preference file deserialization fail.\nBackup saved in %appdata%\\SALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Preference file deserialization fail.\nBackup saved in %appdata%\\FALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
                 BackupCorruptFile(PrefsPath, "io-error-" + SanitizeForFilename(ex.Message));
-                MessageBox.Show("Preference file deserialization fail.\nBackup saved in %appdata%\\SALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Preference file deserialization fail.\nBackup saved in %appdata%\\FALG\\backup", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

@@ -1,4 +1,5 @@
-﻿namespace SALG__Application_;
+﻿// ReSharper disable InconsistentNaming
+namespace SALG;
 
 /// <summary>
 /// DoS ranks

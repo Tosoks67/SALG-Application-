@@ -9,12 +9,12 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using static SALG__Application_.Defaults;
-using static SALG__Application_.FilePaths;
-using static SALG__Application_.Functions;
-using static SALG__Application_.SaveHandler;
+using static SALG.Defaults;
+using static SALG.FilePaths;
+using static SALG.Functions;
+using static SALG.SaveHandler;
 
-namespace SALG__Application_;
+namespace SALG;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml

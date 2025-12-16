@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace SALG__Application_;
+namespace SALG;
 
 /// <summary>
 /// self-explanatory static class containing file paths used in the application

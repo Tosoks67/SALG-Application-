@@ -1,4 +1,4 @@
-﻿namespace SALG__Application_;
+﻿namespace SALG;
 
 public class Prefs
 {

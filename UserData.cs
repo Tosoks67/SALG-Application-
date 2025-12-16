@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SALG__Application_;
+namespace SALG;
 
 /// <summary>
 /// Class representing user data (username, rank, quota done, total time, etc.)
@@ -19,7 +19,7 @@ public class UserData
     public int CurrentQuota { get; set; }
     public bool ShowQuotaDone { get; set; } = true;
 
-    private T TryParseRankOrDefault<T>() where T : struct, Enum => Enum.TryParse(RankString.Replace(' ', '_'), out T r) ? r : default;
+    private T TryParseRankOrDefault<T>() where T : struct => Enum.TryParse(RankString.Replace(' ', '_'), out T r) ? r : default;
 
     public override string ToString() =>
         $"Username: {Username}" +

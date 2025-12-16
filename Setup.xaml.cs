@@ -3,11 +3,11 @@ using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using static SALG__Application_.Defaults;
-using static SALG__Application_.FilePaths;
-using static SALG__Application_.SaveHandler;
+using static SALG.Defaults;
+using static SALG.FilePaths;
+using static SALG.SaveHandler;
 
-namespace SALG__Application_;
+namespace SALG;
 
 /// <summary>
 /// Logika interakcji dla klasy Setup.xaml

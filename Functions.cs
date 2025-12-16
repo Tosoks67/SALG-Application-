@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using static SALG__Application_.Defaults;
-using static SALG__Application_.FilePaths;
+using static SALG.Defaults;
+using static SALG.FilePaths;
 
-namespace SALG__Application_;
+namespace SALG;
 
 internal static class Functions
 {

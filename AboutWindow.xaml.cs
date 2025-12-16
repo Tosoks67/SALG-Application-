@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 
-namespace SALG__Application_;
+namespace SALG;
 
 public partial class AboutWindow : Window
 {

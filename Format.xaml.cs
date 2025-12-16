@@ -2,11 +2,11 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using static SALG__Application_.Defaults;
-using static SALG__Application_.FilePaths;
-using static SALG__Application_.Functions;
+using static SALG.Defaults;
+using static SALG.FilePaths;
+using static SALG.Functions;
 
-namespace SALG__Application_;
+namespace SALG;
 
 public partial class Format
 {
