@@ -1,5 +1,5 @@
 # Security Activity Log Generator (SALG for short)
-is a tool for all my fellow **DoS officers and TRT operatives** which includes the following:
+is a tool for all my fellow **Site-19'ers** which includes the following:
   - Quota and Total Time management,
   - Total Time on-site calculator, ***(You still have to add that 1 hour if affected by DS)***
   - Permanent Notes, *(Notes that appear every time you make a log)*
