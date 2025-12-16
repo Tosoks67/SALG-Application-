@@ -67,7 +67,7 @@ The `$(n)` marker goes at the start of a line you want to contain notes *(What t
 
 ### Full list of all the markers:
 - $(username) - Username
-- $(rank) - Rank *(Includes the prefix customizable below)*
+- $(rank) - Rank *(Includes the prefix customizable below the format)*
 - $(start_time) - Start Time
 - $(end_time) - End Time
 - $(time_on_site) - Total Time on-site
