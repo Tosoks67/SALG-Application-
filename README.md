@@ -22,9 +22,9 @@ Upon the first launch of the application *(Or if it has been fired from the Main
   6. Permanent Note
 
 *After that, there will be a folder called "SALG" created in your `%appdata%` directory which will contain:*
-  - data.json - **data** in previous releases
-  - prefs.json - **misc** in previous releases
-  - notes.txt - **notes** in previous releases
+  - data.json - **data** on the console version
+  - prefs.json - **misc** on the console version
+  - notes.txt - **notes** on the console version
   - backup folder - self-explanatory, stores your backups
 
 *These files store your data. Run the "Remove Data.bat" included in every release if you wish to delete your data.*
