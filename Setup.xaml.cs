@@ -9,9 +9,6 @@ using static SALG.SaveHandler;
 
 namespace SALG;
 
-/// <summary>
-/// Logika interakcji dla klasy Setup.xaml
-/// </summary>
 public partial class Setup
 {
     public UserData UData { get; }

@@ -123,20 +123,16 @@ internal static class Functions
                 Enum.TryParse(input, out DoS_Rank dR);
                 if (dR == DoS_Rank.DoS_Assistant_Director_of_Security)
                     return input;
-                else
-                    return prefix + input;
+                return prefix + input;
             case Department.TRT:
                 return prefix + input;
             case Department.Alpha1:
                 Enum.TryParse(input, out Alpha1_Rank aR);
                 if (aR == Alpha1_Rank.Al1_Assistant_Director_of_Task_Forces)
                     return input;
-                else
-                    return prefix + input;
+                return prefix + input;
             case Department.Epsilon11:
-                return prefix + input;
             case Department.Nu7:
-                return prefix + input;
             default:
                 return prefix + input;
         }

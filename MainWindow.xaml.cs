@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -16,9 +17,6 @@ using static SALG.SaveHandler;
 
 namespace SALG;
 
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
 public partial class MainWindow
 {
     private static readonly FrameworkElementFactory BtnFefLight = new(typeof(Border)) { Name = "border" };
@@ -78,8 +76,8 @@ public partial class MainWindow
         BtnFefLight.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
         BtnFefLight.SetValue(Border.BorderThicknessProperty, new Thickness(0.5));
         BtnFefLight.SetValue(Border.BorderBrushProperty, Brushes.Black);
-        ContentPresenterLight.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-        ContentPresenterLight.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+        ContentPresenterLight.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center);
+        ContentPresenterLight.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
         BtnFefLight.AppendChild(ContentPresenterLight);
 
         BtnFefDark.SetBinding(Border.BackgroundProperty, new Binding("Background") { RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent) });
@@ -87,8 +85,8 @@ public partial class MainWindow
         BtnFefDark.SetValue(Border.CornerRadiusProperty, new CornerRadius(10));
         BtnFefDark.SetValue(Border.BorderThicknessProperty, new Thickness(0.5));
         BtnFefDark.SetValue(Border.BorderBrushProperty, Brushes.White);
-        ContentPresenterDark.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-        ContentPresenterDark.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+        ContentPresenterDark.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center);
+        ContentPresenterDark.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
         BtnFefDark.AppendChild(ContentPresenterDark);
 
         Storyboard.SetTargetProperty(ToWhiteBg.Children[0], new PropertyPath("(Button.Background).(SolidColorBrush.Color)"));
@@ -100,15 +98,15 @@ public partial class MainWindow
         {
             Setters =
             {
-                new Setter(Button.ForegroundProperty, new SolidColorBrush(Colors.White)),
-                new Setter(Button.BackgroundProperty, new SolidColorBrush(Colors.Black)),
-                new Setter(Button.TemplateProperty, new ControlTemplate(typeof(Button))
+                new Setter(ForegroundProperty, new SolidColorBrush(Colors.White)),
+                new Setter(BackgroundProperty, new SolidColorBrush(Colors.Black)),
+                new Setter(TemplateProperty, new ControlTemplate(typeof(Button))
                 {
                     Triggers =
                     {
                         new Trigger
                         {
-                            Property = Button.IsPressedProperty,
+                            Property = ButtonBase.IsPressedProperty,
                             Value = true,
                             EnterActions =
                             {
@@ -131,12 +129,12 @@ public partial class MainWindow
                             {
                                 new Condition
                                 {
-                                    Property = Button.IsMouseOverProperty,
+                                    Property = IsMouseOverProperty,
                                     Value = true
                                 },
                                 new Condition
                                 {
-                                    Property = Button.IsPressedProperty,
+                                    Property = ButtonBase.IsPressedProperty,
                                     Value = false
                                 }
                             },
@@ -167,12 +165,12 @@ public partial class MainWindow
                     {
                         new Condition
                         {
-                            Property = Button.IsMouseOverProperty,
+                            Property = IsMouseOverProperty,
                             Value = true
                         },
                         new Condition
                         {
-                            Property = Button.IsPressedProperty,
+                            Property = ButtonBase.IsPressedProperty,
                             Value = false
                         }
                     },
@@ -197,15 +195,15 @@ public partial class MainWindow
         {
             Setters =
             {
-                new Setter(Button.ForegroundProperty, new SolidColorBrush(Colors.Black)),
-                new Setter(Button.BackgroundProperty, new SolidColorBrush(Colors.White)),
-                new Setter(Button.TemplateProperty, new ControlTemplate(typeof(Button))
+                new Setter(ForegroundProperty, new SolidColorBrush(Colors.Black)),
+                new Setter(BackgroundProperty, new SolidColorBrush(Colors.White)),
+                new Setter(TemplateProperty, new ControlTemplate(typeof(Button))
                 {
                     Triggers =
                     {
                         new Trigger
                         {
-                            Property = Button.IsPressedProperty,
+                            Property = ButtonBase.IsPressedProperty,
                             Value = true,
                             EnterActions =
                             {
@@ -228,12 +226,12 @@ public partial class MainWindow
                             {
                                 new Condition
                                 {
-                                    Property = Button.IsMouseOverProperty,
+                                    Property = IsMouseOverProperty,
                                     Value = true
                                 },
                                 new Condition
                                 {
-                                    Property = Button.IsPressedProperty,
+                                    Property = ButtonBase.IsPressedProperty,
                                     Value = false
                                 }
                             },
@@ -264,12 +262,12 @@ public partial class MainWindow
                     {
                         new Condition
                         {
-                            Property = Button.IsMouseOverProperty,
+                            Property = IsMouseOverProperty,
                             Value = true
                         },
                         new Condition
                         {
-                            Property = Button.IsPressedProperty,
+                            Property = ButtonBase.IsPressedProperty,
                             Value = false
                         }
                     },
@@ -447,12 +445,10 @@ public partial class MainWindow
         CheckRanks(_userData, out var udSafe, _prefs.Department);
         Setup setup = new(udSafe, _prefs.Department, _note);
         setup.ShowDialog();
-        if (setup.DialogResult ?? false)
-        {
-            _userData = setup.UData;
-            _note = setup.Notes;
-            ReloadData(true);
-        }
+        if (!(setup.DialogResult ?? false)) return;
+        _userData = setup.UData;
+        _note = setup.Notes;
+        ReloadData(true);
     }
 
     private void mitDarkMode_Click(object sender, RoutedEventArgs e)
@@ -491,36 +487,35 @@ public partial class MainWindow
     private void InputNumCheck(object sender, TextCompositionEventArgs e)
     {
         e.Handled = !int.TryParse(e.Text, out _) && e.Text != "";
-        if (!e.Handled && sender is TextBox tBox && tBox.GetLineLength(0) >= 2)
+        if (e.Handled || sender is not TextBox tBox || tBox.GetLineLength(0) < 2) return;
+        switch (tBox.Name)
         {
-            switch (tBox.Name)
-            {
-                case "numStartHour":
-                    numStartMinute.Focus();
-                    numStartMinute.CaretIndex = 0;
-                    break;
-                case "numStartMinute":
-                    numEndHour.Focus();
-                    numEndHour.CaretIndex = 0;
-                    break;
-                case "numEndHour":
-                    numEndMinute.Focus();
-                    numEndMinute.CaretIndex = 0;
-                    break;
-                case "numEndMinute":
-                    btnGenerateLog.Focus();
-                    break;
-            }
+            case "numStartHour":
+                numStartMinute.Focus();
+                numStartMinute.CaretIndex = 0;
+                break;
+            case "numStartMinute":
+                numEndHour.Focus();
+                numEndHour.CaretIndex = 0;
+                break;
+            case "numEndHour":
+                numEndMinute.Focus();
+                numEndMinute.CaretIndex = 0;
+                break;
+            case "numEndMinute":
+                btnGenerateLog.Focus();
+                break;
         }
     }
 
     private void KeyDownNumCheck(object sender, KeyEventArgs e)
     {
-        if (sender is TextBox tBox)
+        if (sender is not TextBox tBox) return;
+        switch (e.Key)
         {
-            if (e.Key == Key.Left)
-            {
-                if (tBox.CaretIndex > 0) return;
+            case Key.Left when tBox.CaretIndex > 0:
+                return;
+            case Key.Left:
                 e.Handled = true;
                 switch (tBox.Name)
                 {
@@ -534,10 +529,10 @@ public partial class MainWindow
                         if (tBox.CaretIndex == 0) { numEndHour.Focus(); numEndHour.CaretIndex = numEndHour.GetLineLength(0); }
                         break;
                 }
-            }
-            else if (e.Key == Key.Right)
-            {
-                if (tBox.CaretIndex < tBox.GetLineLength(0)) return;
+                break;
+            case Key.Right when tBox.CaretIndex < tBox.GetLineLength(0):
+                return;
+            case Key.Right:
                 e.Handled = true;
                 switch (tBox.Name)
                 {
@@ -551,7 +546,9 @@ public partial class MainWindow
                         if (tBox.CaretIndex == tBox.GetLineLength(0)) { numEndMinute.Focus(); numStartMinute.CaretIndex = 0; }
                         break;
                 }
-            }
+                break;
+            default:
+                return;
         }
     }
 
@@ -617,26 +614,24 @@ public partial class MainWindow
 
     private void departmentMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is MenuItem element && element.Parent is MenuItem parent)
+        if (sender is not MenuItem { Parent: MenuItem parent } element) return;
+        foreach (var item in parent.Items.OfType<MenuItem>())
         {
-            foreach (var item in parent.Items.OfType<MenuItem>())
-            {
-                if (item != element) item.IsChecked = false;
-            }
-            element.IsChecked = true;
-            _prefs.Department = element.Name switch
-            {
-                "mitDoS" => Department.DoS,
-                "mitTRT" => Department.TRT,
-                "mitA1" => Department.Alpha1,
-                "mitE11" => Department.Epsilon11,
-                "mitN7" => Department.Nu7,
-                _ => _prefs.Department
-            };
-            DepartmentChecker();
-            DarkModeChecker();
-            SaveUserData(_userData);
-            SavePreferences(_prefs);
+            if (item != element) item.IsChecked = false;
         }
+        element.IsChecked = true;
+        _prefs.Department = element.Name switch
+        {
+            "mitDoS" => Department.DoS,
+            "mitTRT" => Department.TRT,
+            "mitA1" => Department.Alpha1,
+            "mitE11" => Department.Epsilon11,
+            "mitN7" => Department.Nu7,
+            _ => _prefs.Department
+        };
+        DepartmentChecker();
+        DarkModeChecker();
+        SaveUserData(_userData);
+        SavePreferences(_prefs);
     }
 }
